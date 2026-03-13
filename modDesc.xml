@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="106">
+    <author>NYKK3</author>
+    <version>1.0.0.0</version>
+    <iconFilename>icon_ShopFavorites.dds</iconFilename>
+    <title>
+        <en>Shop Favorites</en>
+        <de>Laden Favoriten</de>
+        <fr>Favoris Du Magasin</fr>
+        <it>Negozio Preferiti</it>
+        <es>Favoritos De La Tienda</es>
+        <pl>Ulubione Sklepu</pl>
+        <ru>Избранное Магазина</ru>
+    </title>
+    <description>
+        <en><![CDATA[Shop Favorites
+
+A mod that adds a favorites section to the shop menu where you can save your favorite vehicles and tools.
+
+- Add vehicles and tools to your favorites list
+- Access favorites from a new tab in the shop menu
+- Quick access to your most used items
+- Add/remove items directly from the purchase screen
+
+Features:
+- Favorites are saved in the modSettings folder and are shared across all saves; missing favorites in a save will be hidden and not deleted
+- Works with all vehicles (tractors, machines, cars, trailers) and mods
+- Multiplayer support
+
+]]></en>
+        <de><![CDATA[Laden Favoriten
+
+Ein Mod, der eine Favoritensektion zum Ladenmenü hinzufügt, in dem Sie Ihre bevorzugten Fahrzeuge und Werkzeuge speichern können.
+
+- Fügen Sie Fahrzeuge und Werkzeuge zu Ihrer Favoritenliste hinzu
+- Greifen Sie über eine neue Registerkarte im Shop-Menü auf Favoriten zu
+- Schneller Zugriff auf Ihre am häufigsten verwendeten Artikel
+- Elemente direkt vom Kaufbildschirm hinzufügen/entfernen
+
+Funktionen:
+- Favoriten werden im Ordner modSettings gespeichert und mit allen Spielständen geteilt; fehlende Favoriten in einem Spielstand werden ausgeblendet und nicht gelöscht
+- Funktioniert mit allen Fahrzeugen (Traktoren, Maschinen, Autos, Anhänger) und Mods
+- Multiplayer-Unterstützung
+
+]]></de>
+        <fr><![CDATA[Favoris Du Magasin
+
+Un mod qui ajoute une section de favoris au menu du magasin où vous pouvez enregistrer vos véhicules et outils préférés.
+
+- Ajouter des véhicules et des outils à votre liste de favoris
+- Accéder aux favoris depuis un nouvel onglet dans le menu boutique
+- Accès rapide à vos articles les plus utilisés
+- Ajouter/supprimer des éléments directement depuis l'écran d'achat
+
+Fonctionnalités :
+- Les favoris sont enregistrés dans le dossier modSettings et sont partagés entre toutes les parties ; les favoris manquants dans une partie seront masqués et non supprimés
+- Fonctionne avec tous les véhicules (tracteurs, machines, voitures, remorques) et les mods
+- Support multijoueur
+
+]]></fr>
+        <it><![CDATA[Negozio Preferiti
+
+Una mod che aggiunge una sezione preferiti al menù del negozio dove puoi salvare i tuoi veicoli e attrezzi preferiti.
+
+- Aggiungi veicoli e attrezzi alla tua lista dei preferiti
+- Accedi ai preferiti da una nuova scheda nel menu degli acquisti
+- Accesso rapido agli oggetti più utilizzati
+- Aggiungi/rimuovi elementi direttamente dalla schermata di acquisto
+
+Caratteristiche:
+- I preferiti sono salvati nella cartella modSettings e sono condivisi con tutte le partite, i preferiti che mancano in una partita verranno nascosti e non cancellati
+- Funziona con tutti i veicoli (trattori, attrezzi, macchine, rimorchi) e mods
+- Supporto multiplayer
+
+]]></it>
+        <es><![CDATA[Favoritos De La Tienda
+
+Un mod que añade una sección de favoritos al menú de la tienda donde puedes guardar tus vehículos y herramientas favoritos.
+
+- Añadir vehículos y herramientas a tu lista de favoritos
+- Acceder a los favoritos desde una nueva pestaña en el menú de la tienda
+- Acceso rápido a tus artículos más utilizados
+- Añadir/quitar elementos directamente desde la pantalla de compra
+
+Características:
+- Los favoritos se guardan en la carpeta modSettings y se comparten entre todas las partidas; los favoritos que falten en una partida se ocultarán y no se eliminarán
+- Funciona con todos los vehículos (tractores, máquinas, coches, remolques) y mods
+- Soporte multijugador
+
+]]></es>
+        <pl><![CDATA[Ulubione Sklepu
+
+Mod dodający sekcję ulubionych do menu sklepu, gdzie możesz zapisać swoje ulubione pojazdy i narzędzia.
+
+- Dodawaj pojazdy i narzędzia do listy ulubionych
+- Uzyskaj dostęp do ulubionych z nowej zakładki w menu sklepu
+- Szybki dostęp do najczęściej używanych przedmiotów
+- Dodawaj/usuwaj przedmioty bezpośrednio z ekranu zakupu
+
+Funkcje:
+- Ulubione są zapisywane w folderze modSettings i są współdzielone między wszystkimi grami; brakujące ulubione w jednej grze będą ukryte i nie zostaną usunięte
+- Działa ze wszystkimi pojazdami (ciągniki, maszyny, samochody, przyczepy) i modami
+- Obsługa trybu wieloosobowego
+
+]]></pl>
+        <ru><![CDATA[Избранное Магазина
+
+Мод, добавляющий раздел избранного в меню магазина, где вы можете сохранять свои любимые транспортные средства и инструменты.
+
+- Добавляйте транспортные средства и инструменты в список избранного
+- Получайте доступ к избранному из новой вкладки в меню магазина
+- Быстрый доступ к часто используемым предметам
+- Добавляйте/удаляйте предметы прямо из экрана покупки
+
+Особенности:
+- Избранное сохраняется в папке modSettings и совместно используется во всех сохранениях; отсутствующие избранные в сохранении будут скрыты и не удалены
+- Работает со всеми транспортными средствами (трактора, машины, автомобили, прицепы) и модами
+- Поддержка мультиплеера
+
+]]></ru>
+    </description>
+    <extraSourceFiles>
+        <sourceFile filename="src/FavoriteManager.lua"/>
+        <sourceFile filename="src/BuyVehicleDataExtension.lua"/>
+        <sourceFile filename="src/VehicleExtension.lua"/>
+        <sourceFile filename="src/ShopConfigScreenExtension.lua"/>
+        <sourceFile filename="src/events/AddFavoriteEvent.lua"/>
+        <sourceFile filename="src/events/RemoveFavoriteEvent.lua"/>
+    </extraSourceFiles>
+    <l10n filenamePrefix="languages/l10n" />
+	<multiplayer supported="true"/>
+    
+    <actions>
+        <action name="SHOPFAVORITES_TOGGLE_FAVORITE" category="MENU_SHOP_CONFIG" axisType="HALF" ignoreComboMask="false"/>
+    </actions>
+    
+    <inputBinding>
+        <actionBinding action="SHOPFAVORITES_TOGGLE_FAVORITE">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_f" />
+        </actionBinding>
+    </inputBinding>
+</modDesc>

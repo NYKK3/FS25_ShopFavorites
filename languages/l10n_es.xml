@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Favoritos"/>
+        <text name="sf_add_favorite" text="Añadir a Favoritos"/>
+        <text name="sf_remove_favorite" text="Quitar de Favoritos"/>
+        <text name="sf_is_favorite" text="Favorito"/>
+        <text name="sf_unknown_vehicle" text="Vehículo desconocido"/>
+        <text name="sf_btn_remove" text="Quitar"/>
+        <text name="sf_removed_favorite" text="Artículo eliminado de favoritos"/>
+        <text name="sf_confirm_remove" text="¿Estás seguro de que quieres quitar '%s' de favoritos?"/>
+        <text name="sf_error_not_found" text="Vehículo no encontrado en la tienda"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Favoritos De La Tienda: Añadir/Quitar Favorito"/>
+    </texts>
+</l10n>

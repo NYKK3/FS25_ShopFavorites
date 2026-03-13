@@ -1,0 +1,8 @@
+# File Markdown
+*.md
+
+# Cartella Kilo Code
+.kilocode/
+
+# Script utili di esempio e manuale
+scripts_utili_di_esempio_e_manuale/

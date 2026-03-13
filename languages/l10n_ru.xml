@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Избранное"/>
+        <text name="sf_add_favorite" text="Добавить в избранное"/>
+        <text name="sf_remove_favorite" text="Удалить из избранного"/>
+        <text name="sf_is_favorite" text="Избранное"/>
+        <text name="sf_unknown_vehicle" text="Неизвестный транспорт"/>
+        <text name="sf_btn_remove" text="Удалить"/>
+        <text name="sf_removed_favorite" text="Объект удалён из избранного"/>
+        <text name="sf_confirm_remove" text="Вы уверены, что хотите удалить '%s' из избранного?"/>
+        <text name="sf_error_not_found" text="Транспорт не найден в магазине"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Избранное Магазина: Добавить/Удалить Избранное"/>
+    </texts>
+</l10n>
