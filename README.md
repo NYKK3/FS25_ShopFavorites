@@ -45,10 +45,12 @@ The default key to add/remove favorites is **F** (configurable in game settings)
 
 ## 📁 Installation
 
-1. Download the mod
-2. Copy the `FS25_ShopFavorites` folder to your Farming Simulator 25 `mods` folder
+1. Download the mod ZIP file from the [Releases page](https://github.com/NYKK3/FS25_ShopFavorites/releases)
+2. Copy the ZIP file to your Farming Simulator 25 `mods` folder
 3. Enable the mod from the game's main menu
 4. Start a new game or load an existing save
+
+**Note**: This mod will be available on the official FS25 ModHub once all known bugs are resolved.
 
 ## 🌍 Supported Languages
 
@@ -147,10 +149,12 @@ Il tasto predefinito per aggiungere/rimuovere dai preferiti è **F** (configurab
 
 ## 📁 Installazione
 
-1. Scarica la mod
-2. Copia la cartella `FS25_ShopFavorites` nella cartella `mods` del tuo Farming Simulator 25
+1. Scarica il file ZIP della mod dalla [pagina delle Release](https://github.com/NYKK3/FS25_ShopFavorites/releases)
+2. Copia il file ZIP nella cartella `mods` del tuo Farming Simulator 25
 3. Abilita la mod dal menu principale del gioco
 4. Avvia una nuova partita o carica un salvataggio esistente
+
+**Nota**: Questa mod sarà disponibile sul ModHub ufficiale di FS25 una volta risolti tutti i bug noti.
 
 ## 🌍 Lingue Supportate
 
