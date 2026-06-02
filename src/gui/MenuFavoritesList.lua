@@ -235,20 +235,20 @@ function MenuFavoritesList:onListSelectionChanged(list, section, index)
 end
 
 function MenuFavoritesList:onBuyFavorite()
-    print("ShopFavorites: onBuyFavorite called")
+    ShopFavoritesDebug.log("onBuyFavorite called")
     
     if self.selectedIndex <= 0 or self.selectedIndex > #self.currentFavorites then
-        print("ShopFavorites: Invalid selectedIndex: " .. tostring(self.selectedIndex))
+        ShopFavoritesDebug.log("Invalid selectedIndex: " .. tostring(self.selectedIndex))
         return
     end
 
     local favorite = self.currentFavorites[self.selectedIndex]
     if favorite == nil or favorite.xmlFilename == nil then
-        print("ShopFavorites: Favorite is nil or xmlFilename is nil")
+        ShopFavoritesDebug.log("Favorite is nil or xmlFilename is nil")
         return
     end
 
-    print("ShopFavorites: Favorite xmlFilename: " .. tostring(favorite.xmlFilename))
+    ShopFavoritesDebug.log("Favorite xmlFilename: " .. tostring(favorite.xmlFilename))
 
     -- Cerca lo store item corrispondente
     local storeItem = nil
@@ -262,12 +262,12 @@ function MenuFavoritesList:onBuyFavorite()
     end
 
     if storeItem == nil then
-        print("ShopFavorites: StoreItem not found!")
+        ShopFavoritesDebug.log("StoreItem not found!")
         InfoDialog.show(g_i18n:getText("sf_error_not_found"))
         return
     end
 
-    print("ShopFavorites: StoreItem found: " .. tostring(storeItem.name))
+    ShopFavoritesDebug.log("StoreItem found: " .. tostring(storeItem.name))
 
     -- Incrementa il contatore delle aperture per questo preferito
     if g_currentMission ~= nil and g_currentMission.FavoriteManager ~= nil then
@@ -277,25 +277,25 @@ function MenuFavoritesList:onBuyFavorite()
     -- Imposta le configurazioni pending PRIMA di cambiare schermata
     -- Queste verranno applicate automaticamente in onFrameOpen quando la schermata viene aperta
     if favorite.configurations ~= nil and tableCount(favorite.configurations) > 0 then
-        print("ShopFavorites: Setting pending configurations")
+        ShopFavoritesDebug.log("Setting pending configurations")
         ShopConfigScreenExtension.setPendingConfigurations(favorite.configurations)
     else
         -- Assicurati che non ci siano configurazioni pending residue
-        print("ShopFavorites: No configurations to set")
+        ShopFavoritesDebug.log("No configurations to set")
         ShopConfigScreenExtension.setPendingConfigurations(nil)
     end
 
-    print("ShopFavorites: Checking if ShopConfigScreen controller exists")
+    ShopFavoritesDebug.log("Checking if ShopConfigScreen controller exists")
     local shopConfigScreen = g_gui.screenControllers[ShopConfigScreen]
     if shopConfigScreen ~= nil then
         -- Lasciamo che sia ShopConfigScreen a consumare lo storeItem durante
         -- la propria apertura, cosi' il lifecycle resta allineato a quello vanilla.
         ShopConfigScreenExtension.setPendingStoreItem(storeItem)
 
-        print("ShopFavorites: Changing screen to ShopConfigScreen")
+        ShopFavoritesDebug.log("Changing screen to ShopConfigScreen")
         g_gui:changeScreen(nil, ShopConfigScreen, ShopMenu)
     else
-        print("ShopFavorites: ShopConfigScreen controller is nil!")
+        ShopFavoritesDebug.log("ShopConfigScreen controller is nil!")
     end
 end
 

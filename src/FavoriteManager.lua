@@ -32,7 +32,7 @@ source(FavoriteManager.dir .. "src/gui/MenuFavoritesList.lua")
 function FavoriteManager:loadMap()
     -- Controllo che g_shopMenu sia disponibile prima di procedere
     if g_shopMenu == nil then
-        print("ShopFavorites: Error - g_shopMenu is nil during loadMap")
+        ShopFavoritesDebug.log("Error - g_shopMenu is nil during loadMap")
         return
     end
     
@@ -110,7 +110,10 @@ end
 -- Funzione per aggiungere una pagina al menu del negozio
 function FavoriteManager.addShopPage(frame, pageName, uvs, predicateFunc, insertAfter)
     -- (Codice invariato per brevità, mantenere la versione originale)
-    if g_shopMenu == nil then print("ShopFavorites: Error - g_shopMenu is nil") return false end
+    if g_shopMenu == nil then
+        ShopFavoritesDebug.log("Error - g_shopMenu is nil")
+        return false
+    end
 
     local targetPosition = 0
     for k, v in pairs({ pageName }) do
@@ -446,7 +449,7 @@ function FavoriteManager:loadFromXMLFile()
     self.usersInactiveFavorites = {}
 
     if not fileExists(xmlFilePath) then
-        print("ShopFavorites: No saved favorites found (First run or clean install).")
+        ShopFavoritesDebug.log("No saved favorites found (First run or clean install).")
         self.dataLoaded = true
         return
     end
@@ -510,7 +513,7 @@ function FavoriteManager:loadFromXMLFile()
 
     delete(xmlFile)
     self.dataLoaded = true
-    print("ShopFavorites: Favorites loaded successfully from ModSettings.")
+    ShopFavoritesDebug.log("Favorites loaded successfully from ModSettings.")
 end
 
 -- Hook per il salvataggio
