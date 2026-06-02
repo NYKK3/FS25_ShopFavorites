@@ -42,45 +42,98 @@ function ShopConfigScreenExtension.initializeFinancialState(shopConfigScreen)
     end
 end
 
+function ShopConfigScreenExtension.hasBuyPermission()
+    if g_currentMission == nil or g_currentMission.getHasPlayerPermission == nil then
+        return true
+    end
+
+    return g_currentMission:getHasPlayerPermission(Farm.PERMISSION.BUY_VEHICLE)
+end
+
+function ShopConfigScreenExtension.showNoPermissionDialog()
+    InfoDialog.show(g_i18n:getText("shop_messageNoPermissionGeneral"))
+end
+
+function ShopConfigScreenExtension.closePurchaseScreens()
+    if g_gui ~= nil then
+        g_gui:closeDialogByName("YesNoDialog")
+        g_gui:changeScreen(nil, ShopMenu)
+    end
+end
+
+function ShopConfigScreenExtension.createVehicleBuyData(shopConfigScreen, leaseVehicle, farmId)
+    local data = BuyVehicleData.new()
+    data:setStoreItem(shopConfigScreen.storeItem)
+    data:setConfigurations(shopConfigScreen.configurations, shopConfigScreen.boughtConfigurations)
+    data:setConfigurationData(shopConfigScreen.configurationData)
+    data:setLeaseVehicle(leaseVehicle)
+    data:setOwnerFarmId(farmId)
+
+    if data.setLicensePlateData ~= nil then
+        data:setLicensePlateData(shopConfigScreen.licensePlateData)
+    end
+
+    if shopConfigScreen.saleItem ~= nil then
+        data:setSaleItem(shopConfigScreen.saleItem)
+    end
+
+    data:setPrice(leaseVehicle and shopConfigScreen.initialLeasingCosts or shopConfigScreen.totalPrice)
+
+    return data
+end
+
+function ShopConfigScreenExtension.createHandToolBuyData(shopConfigScreen, farmId)
+    local data = BuyHandToolData.new()
+    data:setStoreItem(shopConfigScreen.storeItem)
+    data:setOwnerFarmId(farmId)
+    data:setPrice(shopConfigScreen.totalPrice)
+
+    return data
+end
+
 function ShopConfigScreenExtension.executeFavoritePurchase(shopConfigScreen, leaseVehicle)
     if shopConfigScreen == nil or shopConfigScreen.storeItem == nil or g_currentMission == nil then
         return false
+    end
+
+    if not ShopConfigScreenExtension.hasBuyPermission() then
+        ShopConfigScreenExtension.showNoPermissionDialog()
+        return true
     end
 
     local storeItem = shopConfigScreen.storeItem
     local farmId = g_currentMission:getFarmId()
 
     if StoreItemUtil.getIsVehicle(storeItem) then
-        local data = BuyVehicleData.new()
-        data:setStoreItem(storeItem)
-        data:setConfigurations(shopConfigScreen.configurations, shopConfigScreen.boughtConfigurations)
-        data:setConfigurationData(shopConfigScreen.configurationData)
-        data:setLeaseVehicle(leaseVehicle)
-        data:setOwnerFarmId(farmId)
-        if data.setLicensePlateData ~= nil then
-            data:setLicensePlateData(shopConfigScreen.licensePlateData)
-        end
-        if shopConfigScreen.saleItem ~= nil then
-            data:setSaleItem(shopConfigScreen.saleItem)
-        end
-        data:setPrice(leaseVehicle and shopConfigScreen.initialLeasingCosts or shopConfigScreen.totalPrice)
+        local data = ShopConfigScreenExtension.createVehicleBuyData(shopConfigScreen, leaseVehicle, farmId)
         if data:isValid() then
             data:updatePrice()
-            data:buy(g_currentMission.storeSpawnPlaces, g_currentMission.usedStorePlaces, function()
-                g_gui:changeScreen(nil, ShopMenu)
-            end)
+
+            if g_server == nil and g_client ~= nil then
+                g_client:getServerConnection():sendEvent(BuyVehicleEvent.new(data))
+                ShopConfigScreenExtension.closePurchaseScreens()
+            else
+                data:buy(g_currentMission.storeSpawnPlaces, g_currentMission.usedStorePlaces, function()
+                    g_gui:changeScreen(nil, ShopMenu)
+                end)
+            end
+
             return true
         end
     elseif StoreItemUtil.getIsHandTool(storeItem) then
-        local data = BuyHandToolData.new()
-        data:setStoreItem(storeItem)
-        data:setOwnerFarmId(farmId)
-        data:setPrice(shopConfigScreen.totalPrice)
+        local data = ShopConfigScreenExtension.createHandToolBuyData(shopConfigScreen, farmId)
         if data:isValid() then
             data:updatePrice()
-            data:buy(function()
-                g_gui:changeScreen(nil, ShopMenu)
-            end)
+
+            if g_server == nil and g_client ~= nil then
+                g_client:getServerConnection():sendEvent(BuyHandToolEvent.new(data))
+                ShopConfigScreenExtension.closePurchaseScreens()
+            else
+                data:buy(function()
+                    g_gui:changeScreen(nil, ShopMenu)
+                end)
+            end
+
             return true
         end
     end
