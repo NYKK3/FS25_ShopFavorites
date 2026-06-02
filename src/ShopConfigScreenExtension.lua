@@ -2,23 +2,90 @@
 -- FS25 - ShopFavorites
 --
 -- Estensione per ShopConfigScreen che aggiunge il pulsante preferiti
--- Ottiene le configurazioni correnti e le passa al FavoriteManager
--- Applica le configurazioni salvate quando si apre un preferito
+-- e gestisce l'apertura dei preferiti nella schermata di configurazione.
 
 ShopConfigScreenExtension = {}
 
--- Variabile temporanea per memorizzare le configurazioni da applicare
+-- Configurazioni da applicare al prossimo storeItem aperto
 ShopConfigScreenExtension.pendingConfigurations = nil
+-- StoreItem da aprire quando ShopConfigScreen viene mostrata dai preferiti
+ShopConfigScreenExtension.pendingStoreItem = nil
+ShopConfigScreenExtension.openedFromFavorite = false
 -- StoreItem originale per ripristinare i default
 ShopConfigScreenExtension.originalDefaultConfigIds = nil
 -- Action event ID per il tasto preferiti
 ShopConfigScreenExtension.favoriteActionEventId = nil
--- Flag per verificare se l'azione è già registrata
+-- Flag per verificare se l'azione e' gia' registrata
 ShopConfigScreenExtension.isActionRegistered = false
 
--- Imposta le configurazioni da applicare al prossimo setStoreItem
 function ShopConfigScreenExtension.setPendingConfigurations(configurations)
     ShopConfigScreenExtension.pendingConfigurations = configurations
+end
+
+function ShopConfigScreenExtension.setPendingStoreItem(storeItem)
+    ShopConfigScreenExtension.pendingStoreItem = storeItem
+end
+
+function ShopConfigScreenExtension.initializeFinancialState(shopConfigScreen)
+    if shopConfigScreen == nil or g_currentMission == nil then
+        return
+    end
+
+    local farmId = g_currentMission:getFarmId()
+    if farmId ~= nil then
+        local farm = g_farmManager ~= nil and g_farmManager:getFarmById(farmId) or nil
+        if farm ~= nil and farm.money ~= nil then
+            shopConfigScreen.lastMoney = farm.money
+        elseif g_currentMission.getMoney ~= nil then
+            shopConfigScreen.lastMoney = g_currentMission:getMoney()
+        end
+    end
+end
+
+function ShopConfigScreenExtension.executeFavoritePurchase(shopConfigScreen, leaseVehicle)
+    if shopConfigScreen == nil or shopConfigScreen.storeItem == nil or g_currentMission == nil then
+        return false
+    end
+
+    local storeItem = shopConfigScreen.storeItem
+    local farmId = g_currentMission:getFarmId()
+
+    if StoreItemUtil.getIsVehicle(storeItem) then
+        local data = BuyVehicleData.new()
+        data:setStoreItem(storeItem)
+        data:setConfigurations(shopConfigScreen.configurations, shopConfigScreen.boughtConfigurations)
+        data:setConfigurationData(shopConfigScreen.configurationData)
+        data:setLeaseVehicle(leaseVehicle)
+        data:setOwnerFarmId(farmId)
+        if data.setLicensePlateData ~= nil then
+            data:setLicensePlateData(shopConfigScreen.licensePlateData)
+        end
+        if shopConfigScreen.saleItem ~= nil then
+            data:setSaleItem(shopConfigScreen.saleItem)
+        end
+        data:setPrice(leaseVehicle and shopConfigScreen.initialLeasingCosts or shopConfigScreen.totalPrice)
+        if data:isValid() then
+            data:updatePrice()
+            data:buy(g_currentMission.storeSpawnPlaces, g_currentMission.usedStorePlaces, function()
+                g_gui:changeScreen(nil, ShopMenu)
+            end)
+            return true
+        end
+    elseif StoreItemUtil.getIsHandTool(storeItem) then
+        local data = BuyHandToolData.new()
+        data:setStoreItem(storeItem)
+        data:setOwnerFarmId(farmId)
+        data:setPrice(shopConfigScreen.totalPrice)
+        if data:isValid() then
+            data:updatePrice()
+            data:buy(function()
+                g_gui:changeScreen(nil, ShopMenu)
+            end)
+            return true
+        end
+    end
+
+    return false
 end
 
 -- Aggiunge un pulsante per aggiungere/rimuovere dai preferiti nella schermata di configurazione del negozio
@@ -35,14 +102,12 @@ function ShopConfigScreenExtension:onSetStoreItem(shopConfigScreen, storeItem)
     end
 
     if favoriteButton ~= nil then
-        -- Mostra il pulsante per tutti gli articoli del negozio
         if storeItem == nil then
             favoriteButton:setDisabled(true)
             favoriteButton:setVisible(false)
         else
-            -- Verifica se già nei preferiti usando xmlFilename
             local isFavorite = false
-            if g_currentMission.FavoriteManager ~= nil and storeItem ~= nil then
+            if g_currentMission.FavoriteManager ~= nil then
                 isFavorite = g_currentMission.FavoriteManager:isFavoriteByXml(storeItem.xmlFilename)
             end
 
@@ -50,78 +115,64 @@ function ShopConfigScreenExtension:onSetStoreItem(shopConfigScreen, storeItem)
             favoriteButton:setVisible(true)
             favoriteButton:setText(g_i18n:getText(isFavorite and "sf_remove_favorite" or "sf_add_favorite"))
 
-            -- Imposta il callback correttamente
             shopConfigScreen.onClickFavorite = function()
                 if g_currentMission.FavoriteManager ~= nil and storeItem ~= nil then
                     if g_currentMission.FavoriteManager:isFavoriteByXml(storeItem.xmlFilename) then
                         g_currentMission.FavoriteManager:removeFavoriteByXml(storeItem.xmlFilename)
                         favoriteButton:setText(g_i18n:getText("sf_add_favorite"))
                     else
-                        -- Ottieni le configurazioni correnti dallo ShopConfigScreen
                         local configurations = ShopConfigScreenExtension.getCurrentConfigurations(shopConfigScreen)
-                        
-                        -- Aggiungi il preferito con le configurazioni
                         g_currentMission.FavoriteManager:addFavoriteFromStoreItem(storeItem, configurations)
                         favoriteButton:setText(g_i18n:getText("sf_remove_favorite"))
                     end
                 end
             end
 
-            -- Collega il callback al pulsante
             favoriteButton.onClickCallback = shopConfigScreen.onClickFavorite
             favoriteButton:setCallback("onClickCallback", "onClickFavorite")
-            
-            -- Registra l'azione input se non è già registrata
+
             ShopConfigScreenExtension:registerActionEvent(shopConfigScreen)
         end
     end
 end
 
--- Ottiene le configurazioni correnti dallo ShopConfigScreen
 function ShopConfigScreenExtension.getCurrentConfigurations(shopConfigScreen)
     local configurations = {}
-    
+
     if shopConfigScreen == nil then
         return configurations
     end
-    
-    -- Lo ShopConfigScreen ha una proprietà 'configurations' che contiene le configurazioni selezionate
+
     if shopConfigScreen.configurations ~= nil then
         for configName, configIndex in pairs(shopConfigScreen.configurations) do
             configurations[configName] = configIndex
         end
     end
-    
+
     return configurations
 end
 
 function ShopConfigScreenExtension:updateButtons(shopConfigScreen, storeItem, vehicle, saleItem)
     if shopConfigScreen.favoriteButton then
-        -- Mostra il pulsante solo quando non stiamo configurando un veicolo esistente
         shopConfigScreen.favoriteButton:setVisible(vehicle == nil and saleItem == nil)
     end
 end
 
--- Registra l'azione input per il tasto preferiti
 function ShopConfigScreenExtension:registerActionEvent(shopConfigScreen)
-    -- Se l'azione è già registrata, non fare nulla
     if ShopConfigScreenExtension.isActionRegistered then
         return
     end
-    
-    -- Registra il nuovo evento - passa il nome dell'azione come stringa
-    local actionName = "SHOPFAVORITES_TOGGLE_FAVORITE"
-    
+
     local valid, eventId = g_inputBinding:registerActionEvent(
-        actionName,
+        "SHOPFAVORITES_TOGGLE_FAVORITE",
         shopConfigScreen,
         ShopConfigScreenExtension.onToggleFavoriteInput,
-        false,  -- triggerUp
-        true,   -- triggerDown
-        false,  -- triggerAlways
-        true    -- startActive
+        false,
+        true,
+        false,
+        true
     )
-    
+
     if valid then
         ShopConfigScreenExtension.favoriteActionEventId = eventId
         ShopConfigScreenExtension.isActionRegistered = true
@@ -129,7 +180,6 @@ function ShopConfigScreenExtension:registerActionEvent(shopConfigScreen)
     end
 end
 
--- Rimuove l'azione input registrata
 function ShopConfigScreenExtension:unregisterActionEvent()
     if ShopConfigScreenExtension.favoriteActionEventId ~= nil then
         g_inputBinding:removeActionEvent(ShopConfigScreenExtension.favoriteActionEventId)
@@ -138,60 +188,52 @@ function ShopConfigScreenExtension:unregisterActionEvent()
     end
 end
 
--- Callback chiamato quando viene premuto il tasto preferiti
 function ShopConfigScreenExtension.onToggleFavoriteInput(shopConfigScreen)
     if shopConfigScreen.onClickFavorite ~= nil then
         shopConfigScreen.onClickFavorite()
     end
 end
 
--- Hook setStoreItem per applicare le configurazioni e gestire il pulsante preferiti
 ShopConfigScreen.setStoreItem = Utils.overwrittenFunction(ShopConfigScreen.setStoreItem,
     function(self, superFunc, storeItem, ...)
         print("ShopFavorites: setStoreItem called with storeItem: " .. tostring(storeItem and storeItem.name))
         print("ShopFavorites: self.storeItem before superFunc: " .. tostring(self.storeItem and self.storeItem.name))
-        
-        -- Se ci sono configurazioni pending, applicale allo storeItem PRIMA di chiamare superFunc
+
         if ShopConfigScreenExtension.pendingConfigurations ~= nil and storeItem ~= nil then
             print("ShopFavorites: Pending configurations found, applying to storeItem")
             local configsToApply = ShopConfigScreenExtension.pendingConfigurations
-            
-            -- Salva i default originali per ripristinarli dopo
+
             ShopConfigScreenExtension.originalDefaultConfigIds = storeItem.defaultConfigurationIds
-            
-            -- Crea una copia dei default e modifica con le nostre configurazioni
+
             local newDefaults = {}
             if storeItem.defaultConfigurationIds ~= nil then
                 for k, v in pairs(storeItem.defaultConfigurationIds) do
                     newDefaults[k] = v
                 end
             end
-            
-            -- Applica le nostre configurazioni come nuovi default
+
             for configName, configIndex in pairs(configsToApply) do
                 print("ShopFavorites: Applying config " .. configName .. " = " .. configIndex .. " to storeItem")
                 newDefaults[configName] = configIndex
             end
-            
-            -- Sostituisci i default dello storeItem temporaneamente
+
             storeItem.defaultConfigurationIds = newDefaults
-            
-            -- Cancella le configurazioni pending
             ShopConfigScreenExtension.pendingConfigurations = nil
             print("ShopFavorites: Configurations applied to storeItem")
         else
             print("ShopFavorites: No pending configurations")
         end
-        
-        -- Chiama la funzione originale con le configurazioni applicate
+
         superFunc(self, storeItem, ...)
-        
+
         print("ShopFavorites: superFunc called, self.configurations: " .. tostring(self.configurations ~= nil))
         print("ShopFavorites: self.storeItem after superFunc: " .. tostring(self.storeItem and self.storeItem.name))
-        
-        -- NON ripristinare i default originali qui, li ripristiniamo in onClose
-        
-        -- Gestisce il pulsante preferiti
+        print("ShopFavorites: buyButton state visible=" .. tostring(self.buyButton and self.buyButton.visible) .. " disabled=" .. tostring(self.buyButton and self.buyButton.disabled))
+        print("ShopFavorites: leaseButton state visible=" .. tostring(self.leaseButton and self.leaseButton.visible) .. " disabled=" .. tostring(self.leaseButton and self.leaseButton.disabled))
+        print("ShopFavorites: totalPrice=" .. tostring(self.totalPrice) .. " initialLeasingCosts=" .. tostring(self.initialLeasingCosts))
+        print("ShopFavorites: lastMoney=" .. tostring(self.lastMoney) .. " playerFarmId=" .. tostring(self.playerFarmId) .. " ownerFarmId=" .. tostring(self.ownerFarmId))
+        print("ShopFavorites: previousVehicles=" .. tostring(self.previousVehicles and #self.previousVehicles or 0) .. " previewVehicles=" .. tostring(self.previewVehicles and #self.previewVehicles or 0))
+
         ShopConfigScreenExtension:onSetStoreItem(self, storeItem)
     end)
 
@@ -200,46 +242,102 @@ ShopConfigScreen.updateButtons = Utils.prependedFunction(ShopConfigScreen.update
         ShopConfigScreenExtension:updateButtons(self, storeItem, vehicle, saleItem)
     end)
 
--- Hook onFrameOpen per applicare le configurazioni pending quando la schermata viene aperta
-ShopConfigScreen.onFrameOpen = Utils.appendedFunction(ShopConfigScreen.onFrameOpen,
-    function(self)
-        -- Se ci sono configurazioni pending e un storeItem è stato impostato, applicale
-        if ShopConfigScreenExtension.pendingConfigurations ~= nil and self.storeItem ~= nil then
-            local configsToApply = ShopConfigScreenExtension.pendingConfigurations
-            
-            -- Salva i default originali
-            ShopConfigScreenExtension.originalDefaultConfigIds = self.storeItem.defaultConfigurationIds
-            
-            -- Crea una copia dei default e modifica con le nostre configurazioni
-            local newDefaults = {}
-            if self.storeItem.defaultConfigurationIds ~= nil then
-                for k, v in pairs(self.storeItem.defaultConfigurationIds) do
-                    newDefaults[k] = v
-                end
+-- Consuma il preferito dopo che la GUI ha completato il cambio schermata.
+Gui.changeScreen = Utils.overwrittenFunction(Gui.changeScreen,
+    function(self, superFunc, sourceScreen, screenClass, returnScreenClass)
+        local result = superFunc(self, sourceScreen, screenClass, returnScreenClass)
+
+        if screenClass == ShopConfigScreen and ShopConfigScreenExtension.pendingStoreItem ~= nil then
+            local shopConfigScreen = self.screenControllers[ShopConfigScreen]
+            local storeItem = ShopConfigScreenExtension.pendingStoreItem
+            ShopConfigScreenExtension.pendingStoreItem = nil
+
+            if shopConfigScreen ~= nil then
+                -- La schermata mantiene stato tra aperture. Puliamo il riferimento
+                -- precedente prima di assegnare l'articolo richiesto dal preferito.
+                shopConfigScreen.storeItem = nil
+                ShopConfigScreenExtension.initializeFinancialState(shopConfigScreen)
+                ShopConfigScreenExtension.openedFromFavorite = true
+
+                print("ShopFavorites: Applying pending storeItem after Gui.changeScreen")
+                shopConfigScreen:setStoreItem(storeItem)
             end
-            
-            -- Applica le nostre configurazioni come nuovi default
-            for configName, configIndex in pairs(configsToApply) do
-                newDefaults[configName] = configIndex
-            end
-            
-            -- Sostituisci i default dello storeItem
-            self.storeItem.defaultConfigurationIds = newDefaults
-            
-            -- Cancella le configurazioni pending
-            ShopConfigScreenExtension.pendingConfigurations = nil
         end
+
+        return result
     end)
 
--- Hook onClose per rimuovere l'azione input e ripristinare i default originali
 ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
     function(self)
         ShopConfigScreenExtension:unregisterActionEvent()
-        
-        -- Ripristina i default originali dello storeItem se necessario
+
         if ShopConfigScreenExtension.originalDefaultConfigIds ~= nil and self.storeItem ~= nil then
             self.storeItem.defaultConfigurationIds = ShopConfigScreenExtension.originalDefaultConfigIds
             ShopConfigScreenExtension.originalDefaultConfigIds = nil
             print("ShopFavorites: Original defaults restored in onClose")
         end
+
+        ShopConfigScreenExtension.pendingStoreItem = nil
+        ShopConfigScreenExtension.pendingConfigurations = nil
+        ShopConfigScreenExtension.openedFromFavorite = false
+
+        -- Evita che l'istanza della schermata riutilizzi stato vecchio
+        -- alla successiva apertura da un preferito.
+        self.storeItem = nil
+        self.saleItem = nil
+        self.vehicle = nil
+        self.configurations = {}
+        self.configurationData = {}
+        self.previewVehicles = {}
     end)
+
+if ShopConfigScreen.onClickBuy ~= nil then
+    ShopConfigScreen.onClickBuy = Utils.prependedFunction(ShopConfigScreen.onClickBuy,
+        function(self, ...)
+            print("ShopFavorites: ShopConfigScreen.onClickBuy storeItem=" .. tostring(self.storeItem and self.storeItem.name) .. " totalPrice=" .. tostring(self.totalPrice))
+        end)
+end
+
+if ShopConfigScreen.onClickLease ~= nil then
+    ShopConfigScreen.onClickLease = Utils.prependedFunction(ShopConfigScreen.onClickLease,
+        function(self, ...)
+            print("ShopFavorites: ShopConfigScreen.onClickLease storeItem=" .. tostring(self.storeItem and self.storeItem.name) .. " initialLeasingCosts=" .. tostring(self.initialLeasingCosts))
+        end)
+end
+
+if ShopConfigScreen.onYesNoBuy ~= nil then
+    ShopConfigScreen.onYesNoBuy = Utils.overwrittenFunction(ShopConfigScreen.onYesNoBuy,
+        function(self, superFunc, yes, ...)
+            print("ShopFavorites: ShopConfigScreen.onYesNoBuy yes=" .. tostring(yes) .. " storeItem=" .. tostring(self.storeItem and self.storeItem.name))
+            print("ShopFavorites: onYesNoBuy state lastMoney=" .. tostring(self.lastMoney) .. " totalPrice=" .. tostring(self.totalPrice) .. " playerFarmId=" .. tostring(self.playerFarmId) .. " ownerFarmId=" .. tostring(self.ownerFarmId))
+            print("ShopFavorites: onYesNoBuy mission storeSpawnPlaces=" .. tostring(g_currentMission and g_currentMission.storeSpawnPlaces ~= nil) .. " usedStorePlaces=" .. tostring(g_currentMission and g_currentMission.usedStorePlaces ~= nil))
+
+            if yes and ShopConfigScreenExtension.openedFromFavorite then
+                local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, false)
+                print("ShopFavorites: executeFavoritePurchase buy handled=" .. tostring(handled))
+                if handled then
+                    return
+                end
+            end
+
+            return superFunc(self, yes, ...)
+        end)
+end
+
+if ShopConfigScreen.onYesNoLease ~= nil then
+    ShopConfigScreen.onYesNoLease = Utils.overwrittenFunction(ShopConfigScreen.onYesNoLease,
+        function(self, superFunc, yes, ...)
+            print("ShopFavorites: ShopConfigScreen.onYesNoLease yes=" .. tostring(yes) .. " storeItem=" .. tostring(self.storeItem and self.storeItem.name))
+            print("ShopFavorites: onYesNoLease state lastMoney=" .. tostring(self.lastMoney) .. " initialLeasingCosts=" .. tostring(self.initialLeasingCosts) .. " playerFarmId=" .. tostring(self.playerFarmId) .. " ownerFarmId=" .. tostring(self.ownerFarmId))
+
+            if yes and ShopConfigScreenExtension.openedFromFavorite then
+                local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, true)
+                print("ShopFavorites: executeFavoritePurchase lease handled=" .. tostring(handled))
+                if handled then
+                    return
+                end
+            end
+
+            return superFunc(self, yes, ...)
+        end)
+end

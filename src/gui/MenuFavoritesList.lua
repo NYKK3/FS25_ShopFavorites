@@ -285,19 +285,15 @@ function MenuFavoritesList:onBuyFavorite()
         ShopConfigScreenExtension.setPendingConfigurations(nil)
     end
 
-    -- Apre ShopConfigScreen con ShopMenu come screen di ritorno
-    -- Questo permette al pulsante "Indietro" di funzionare correttamente
-    print("ShopFavorites: Changing screen to ShopConfigScreen")
-    g_gui:changeScreen(nil, ShopConfigScreen, ShopMenu)
-    
-    -- Imposta lo storeItem nella schermata di configurazione
-    -- Le configurazioni pending verranno applicate automaticamente in onFrameOpen
     print("ShopFavorites: Checking if ShopConfigScreen controller exists")
-    if g_gui.screenControllers[ShopConfigScreen] ~= nil then
-        print("ShopFavorites: ShopConfigScreen controller exists, calling setStoreItem")
-        local shopConfigScreen = g_gui.screenControllers[ShopConfigScreen]
-        shopConfigScreen:setStoreItem(storeItem)
-        print("ShopFavorites: setStoreItem called")
+    local shopConfigScreen = g_gui.screenControllers[ShopConfigScreen]
+    if shopConfigScreen ~= nil then
+        -- Lasciamo che sia ShopConfigScreen a consumare lo storeItem durante
+        -- la propria apertura, cosi' il lifecycle resta allineato a quello vanilla.
+        ShopConfigScreenExtension.setPendingStoreItem(storeItem)
+
+        print("ShopFavorites: Changing screen to ShopConfigScreen")
+        g_gui:changeScreen(nil, ShopConfigScreen, ShopMenu)
     else
         print("ShopFavorites: ShopConfigScreen controller is nil!")
     end
