@@ -7,6 +7,7 @@
         <text name="sf_remove_favorite" text="Rimuovi dai preferiti"/>
         <text name="sf_is_favorite" text="Preferito"/>
         <text name="sf_unknown_vehicle" text="Veicolo sconosciuto"/>
+        <text name="sf_header_vehicle_type" text="Tipo veicolo"/>
         <text name="sf_btn_remove" text="Rimuovi"/>
         <text name="sf_removed_favorite" text="Oggetto rimosso dai preferiti"/>
         <text name="sf_confirm_remove" text="Sei sicuro di voler rimuovere '%s' dai preferiti?"/>

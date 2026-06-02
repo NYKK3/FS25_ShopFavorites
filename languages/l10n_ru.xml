@@ -7,6 +7,7 @@
         <text name="sf_remove_favorite" text="Удалить из избранного"/>
         <text name="sf_is_favorite" text="Избранное"/>
         <text name="sf_unknown_vehicle" text="Неизвестный транспорт"/>
+        <text name="sf_header_vehicle_type" text="Тип техники"/>
         <text name="sf_btn_remove" text="Удалить"/>
         <text name="sf_removed_favorite" text="Объект удалён из избранного"/>
         <text name="sf_confirm_remove" text="Вы уверены, что хотите удалить '%s' из избранного?"/>
