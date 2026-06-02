@@ -196,11 +196,7 @@ end
 
 ShopConfigScreen.setStoreItem = Utils.overwrittenFunction(ShopConfigScreen.setStoreItem,
     function(self, superFunc, storeItem, ...)
-        print("ShopFavorites: setStoreItem called with storeItem: " .. tostring(storeItem and storeItem.name))
-        print("ShopFavorites: self.storeItem before superFunc: " .. tostring(self.storeItem and self.storeItem.name))
-
         if ShopConfigScreenExtension.pendingConfigurations ~= nil and storeItem ~= nil then
-            print("ShopFavorites: Pending configurations found, applying to storeItem")
             local configsToApply = ShopConfigScreenExtension.pendingConfigurations
 
             ShopConfigScreenExtension.originalDefaultConfigIds = storeItem.defaultConfigurationIds
@@ -213,26 +209,14 @@ ShopConfigScreen.setStoreItem = Utils.overwrittenFunction(ShopConfigScreen.setSt
             end
 
             for configName, configIndex in pairs(configsToApply) do
-                print("ShopFavorites: Applying config " .. configName .. " = " .. configIndex .. " to storeItem")
                 newDefaults[configName] = configIndex
             end
 
             storeItem.defaultConfigurationIds = newDefaults
             ShopConfigScreenExtension.pendingConfigurations = nil
-            print("ShopFavorites: Configurations applied to storeItem")
-        else
-            print("ShopFavorites: No pending configurations")
         end
 
         superFunc(self, storeItem, ...)
-
-        print("ShopFavorites: superFunc called, self.configurations: " .. tostring(self.configurations ~= nil))
-        print("ShopFavorites: self.storeItem after superFunc: " .. tostring(self.storeItem and self.storeItem.name))
-        print("ShopFavorites: buyButton state visible=" .. tostring(self.buyButton and self.buyButton.visible) .. " disabled=" .. tostring(self.buyButton and self.buyButton.disabled))
-        print("ShopFavorites: leaseButton state visible=" .. tostring(self.leaseButton and self.leaseButton.visible) .. " disabled=" .. tostring(self.leaseButton and self.leaseButton.disabled))
-        print("ShopFavorites: totalPrice=" .. tostring(self.totalPrice) .. " initialLeasingCosts=" .. tostring(self.initialLeasingCosts))
-        print("ShopFavorites: lastMoney=" .. tostring(self.lastMoney) .. " playerFarmId=" .. tostring(self.playerFarmId) .. " ownerFarmId=" .. tostring(self.ownerFarmId))
-        print("ShopFavorites: previousVehicles=" .. tostring(self.previousVehicles and #self.previousVehicles or 0) .. " previewVehicles=" .. tostring(self.previewVehicles and #self.previewVehicles or 0))
 
         ShopConfigScreenExtension:onSetStoreItem(self, storeItem)
     end)
@@ -259,7 +243,6 @@ Gui.changeScreen = Utils.overwrittenFunction(Gui.changeScreen,
                 ShopConfigScreenExtension.initializeFinancialState(shopConfigScreen)
                 ShopConfigScreenExtension.openedFromFavorite = true
 
-                print("ShopFavorites: Applying pending storeItem after Gui.changeScreen")
                 shopConfigScreen:setStoreItem(storeItem)
             end
         end
@@ -274,7 +257,6 @@ ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
         if ShopConfigScreenExtension.originalDefaultConfigIds ~= nil and self.storeItem ~= nil then
             self.storeItem.defaultConfigurationIds = ShopConfigScreenExtension.originalDefaultConfigIds
             ShopConfigScreenExtension.originalDefaultConfigIds = nil
-            print("ShopFavorites: Original defaults restored in onClose")
         end
 
         ShopConfigScreenExtension.pendingStoreItem = nil
@@ -291,30 +273,11 @@ ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
         self.previewVehicles = {}
     end)
 
-if ShopConfigScreen.onClickBuy ~= nil then
-    ShopConfigScreen.onClickBuy = Utils.prependedFunction(ShopConfigScreen.onClickBuy,
-        function(self, ...)
-            print("ShopFavorites: ShopConfigScreen.onClickBuy storeItem=" .. tostring(self.storeItem and self.storeItem.name) .. " totalPrice=" .. tostring(self.totalPrice))
-        end)
-end
-
-if ShopConfigScreen.onClickLease ~= nil then
-    ShopConfigScreen.onClickLease = Utils.prependedFunction(ShopConfigScreen.onClickLease,
-        function(self, ...)
-            print("ShopFavorites: ShopConfigScreen.onClickLease storeItem=" .. tostring(self.storeItem and self.storeItem.name) .. " initialLeasingCosts=" .. tostring(self.initialLeasingCosts))
-        end)
-end
-
 if ShopConfigScreen.onYesNoBuy ~= nil then
     ShopConfigScreen.onYesNoBuy = Utils.overwrittenFunction(ShopConfigScreen.onYesNoBuy,
         function(self, superFunc, yes, ...)
-            print("ShopFavorites: ShopConfigScreen.onYesNoBuy yes=" .. tostring(yes) .. " storeItem=" .. tostring(self.storeItem and self.storeItem.name))
-            print("ShopFavorites: onYesNoBuy state lastMoney=" .. tostring(self.lastMoney) .. " totalPrice=" .. tostring(self.totalPrice) .. " playerFarmId=" .. tostring(self.playerFarmId) .. " ownerFarmId=" .. tostring(self.ownerFarmId))
-            print("ShopFavorites: onYesNoBuy mission storeSpawnPlaces=" .. tostring(g_currentMission and g_currentMission.storeSpawnPlaces ~= nil) .. " usedStorePlaces=" .. tostring(g_currentMission and g_currentMission.usedStorePlaces ~= nil))
-
             if yes and ShopConfigScreenExtension.openedFromFavorite then
                 local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, false)
-                print("ShopFavorites: executeFavoritePurchase buy handled=" .. tostring(handled))
                 if handled then
                     return
                 end
@@ -327,12 +290,8 @@ end
 if ShopConfigScreen.onYesNoLease ~= nil then
     ShopConfigScreen.onYesNoLease = Utils.overwrittenFunction(ShopConfigScreen.onYesNoLease,
         function(self, superFunc, yes, ...)
-            print("ShopFavorites: ShopConfigScreen.onYesNoLease yes=" .. tostring(yes) .. " storeItem=" .. tostring(self.storeItem and self.storeItem.name))
-            print("ShopFavorites: onYesNoLease state lastMoney=" .. tostring(self.lastMoney) .. " initialLeasingCosts=" .. tostring(self.initialLeasingCosts) .. " playerFarmId=" .. tostring(self.playerFarmId) .. " ownerFarmId=" .. tostring(self.ownerFarmId))
-
             if yes and ShopConfigScreenExtension.openedFromFavorite then
                 local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, true)
-                print("ShopFavorites: executeFavoritePurchase lease handled=" .. tostring(handled))
                 if handled then
                     return
                 end
