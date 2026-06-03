@@ -10,7 +10,7 @@ ShopConfigScreenExtension = {}
 ShopConfigScreenExtension.pendingConfigurations = nil
 -- StoreItem da aprire quando ShopConfigScreen viene mostrata dai preferiti
 ShopConfigScreenExtension.pendingStoreItem = nil
-ShopConfigScreenExtension.openedFromFavorite = false
+ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
 -- StoreItem originale per ripristinare i default
 ShopConfigScreenExtension.originalDefaultConfigIds = nil
 -- Action event ID per il tasto preferiti
@@ -249,6 +249,8 @@ end
 
 ShopConfigScreen.setStoreItem = Utils.overwrittenFunction(ShopConfigScreen.setStoreItem,
     function(self, superFunc, storeItem, ...)
+        self.shopFavoritesOpenedFromFavorite = ShopConfigScreenExtension.isApplyingFavoriteStoreItem == true
+
         if ShopConfigScreenExtension.pendingConfigurations ~= nil and storeItem ~= nil then
             local configsToApply = ShopConfigScreenExtension.pendingConfigurations
 
@@ -294,9 +296,9 @@ Gui.changeScreen = Utils.overwrittenFunction(Gui.changeScreen,
                 -- precedente prima di assegnare l'articolo richiesto dal preferito.
                 shopConfigScreen.storeItem = nil
                 ShopConfigScreenExtension.initializeFinancialState(shopConfigScreen)
-                ShopConfigScreenExtension.openedFromFavorite = true
-
+                ShopConfigScreenExtension.isApplyingFavoriteStoreItem = true
                 shopConfigScreen:setStoreItem(storeItem)
+                ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
             end
         end
 
@@ -314,13 +316,14 @@ ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
 
         ShopConfigScreenExtension.pendingStoreItem = nil
         ShopConfigScreenExtension.pendingConfigurations = nil
-        ShopConfigScreenExtension.openedFromFavorite = false
+        ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
 
         -- Evita che l'istanza della schermata riutilizzi stato vecchio
         -- alla successiva apertura da un preferito.
         self.storeItem = nil
         self.saleItem = nil
         self.vehicle = nil
+        self.shopFavoritesOpenedFromFavorite = false
         self.configurations = {}
         self.configurationData = {}
         self.previewVehicles = {}
@@ -329,7 +332,7 @@ ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
 if ShopConfigScreen.onYesNoBuy ~= nil then
     ShopConfigScreen.onYesNoBuy = Utils.overwrittenFunction(ShopConfigScreen.onYesNoBuy,
         function(self, superFunc, yes, ...)
-            if yes and ShopConfigScreenExtension.openedFromFavorite then
+            if yes and self.shopFavoritesOpenedFromFavorite == true and self.vehicle == nil then
                 local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, false)
                 if handled then
                     return
@@ -343,7 +346,7 @@ end
 if ShopConfigScreen.onYesNoLease ~= nil then
     ShopConfigScreen.onYesNoLease = Utils.overwrittenFunction(ShopConfigScreen.onYesNoLease,
         function(self, superFunc, yes, ...)
-            if yes and ShopConfigScreenExtension.openedFromFavorite then
+            if yes and self.shopFavoritesOpenedFromFavorite == true and self.vehicle == nil then
                 local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, true)
                 if handled then
                     return

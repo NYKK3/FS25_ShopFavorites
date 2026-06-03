@@ -1,8 +1,12 @@
-# Cartella Kilo Code
+# Cartelle
 .kilocode/
+.claude/
 
 # Script utili di esempio e manuale
 scripts_utili_di_esempio_e_manuale/
 
 # I file di progettazione
 plans/
+
+# Altro
+AGENTS.md

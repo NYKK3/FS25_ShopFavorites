@@ -25,7 +25,6 @@ A mod that adds a favorites section to the shop menu where you can save your fav
 Features:
 - Favorites are saved in the modSettings folder and are shared across all saves; missing favorites in a save will be hidden and not deleted
 - Works with all vehicles (tractors, machines, cars, trailers) and mods
-- Multiplayer support
 
 ]]></en>
         <de><![CDATA[Laden Favoriten
@@ -40,7 +39,6 @@ Ein Mod, der eine Favoritensektion zum Ladenmenü hinzufügt, in dem Sie Ihre be
 Funktionen:
 - Favoriten werden im Ordner modSettings gespeichert und mit allen Spielständen geteilt; fehlende Favoriten in einem Spielstand werden ausgeblendet und nicht gelöscht
 - Funktioniert mit allen Fahrzeugen (Traktoren, Maschinen, Autos, Anhänger) und Mods
-- Multiplayer-Unterstützung
 
 ]]></de>
         <fr><![CDATA[Favoris Du Magasin
@@ -55,7 +53,6 @@ Un mod qui ajoute une section de favoris au menu du magasin où vous pouvez enre
 Fonctionnalités :
 - Les favoris sont enregistrés dans le dossier modSettings et sont partagés entre toutes les parties ; les favoris manquants dans une partie seront masqués et non supprimés
 - Fonctionne avec tous les véhicules (tracteurs, machines, voitures, remorques) et les mods
-- Support multijoueur
 
 ]]></fr>
         <it><![CDATA[Negozio Preferiti
@@ -70,7 +67,6 @@ Una mod che aggiunge una sezione preferiti al menù del negozio dove puoi salvar
 Caratteristiche:
 - I preferiti sono salvati nella cartella modSettings e sono condivisi con tutte le partite, i preferiti che mancano in una partita verranno nascosti e non cancellati
 - Funziona con tutti i veicoli (trattori, attrezzi, macchine, rimorchi) e mods
-- Supporto multiplayer
 
 ]]></it>
         <es><![CDATA[Favoritos De La Tienda
@@ -85,7 +81,6 @@ Un mod que añade una sección de favoritos al menú de la tienda donde puedes g
 Características:
 - Los favoritos se guardan en la carpeta modSettings y se comparten entre todas las partidas; los favoritos que falten en una partida se ocultarán y no se eliminarán
 - Funciona con todos los vehículos (tractores, máquinas, coches, remolques) y mods
-- Soporte multijugador
 
 ]]></es>
         <pl><![CDATA[Ulubione Sklepu
@@ -100,7 +95,6 @@ Mod dodający sekcję ulubionych do menu sklepu, gdzie możesz zapisać swoje ul
 Funkcje:
 - Ulubione są zapisywane w folderze modSettings i są współdzielone między wszystkimi grami; brakujące ulubione w jednej grze będą ukryte i nie zostaną usunięte
 - Działa ze wszystkimi pojazdami (ciągniki, maszyny, samochody, przyczepy) i modami
-- Obsługa trybu wieloosobowego
 
 ]]></pl>
         <ru><![CDATA[Избранное Магазина
@@ -115,7 +109,6 @@ Funkcje:
 Особенности:
 - Избранное сохраняется в папке modSettings и совместно используется во всех сохранениях; отсутствующие избранные в сохранении будут скрыты и не удалены
 - Работает со всеми транспортными средствами (трактора, машины, автомобили, прицепы) и модами
-- Поддержка мультиплеера
 
 ]]></ru>
     </description>
