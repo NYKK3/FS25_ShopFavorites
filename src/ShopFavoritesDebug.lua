@@ -1,5 +1,5 @@
 ShopFavoritesDebug = {
-    enabled = false
+    enabled = true
 }
 
 function ShopFavoritesDebug.log(message)
@@ -53,6 +53,46 @@ function ShopFavoritesDebug.describeTableShallow(tbl)
             table.insert(parts, string.format("%s=%s", tostring(key), tostring(value)))
         end
     end
+
+    table.sort(parts)
+    return table.concat(parts, "; ")
+end
+
+function ShopFavoritesDebug.describeTableDeep(value, maxDepth, visited)
+    maxDepth = maxDepth or 3
+    visited = visited or {}
+
+    local valueType = type(value)
+    if valueType ~= "table" then
+        return tostring(value)
+    end
+
+    if visited[value] then
+        return "<recursive>"
+    end
+
+    if maxDepth <= 0 then
+        return "<max-depth>"
+    end
+
+    visited[value] = true
+
+    local parts = {}
+    for key, childValue in pairs(value) do
+        local keyType = type(key)
+        if keyType == "string" or keyType == "number" then
+            local childType = type(childValue)
+            if childType == "table" then
+                table.insert(parts, string.format("%s={%s}",
+                    tostring(key),
+                    ShopFavoritesDebug.describeTableDeep(childValue, maxDepth - 1, visited)))
+            else
+                table.insert(parts, string.format("%s=%s", tostring(key), tostring(childValue)))
+            end
+        end
+    end
+
+    visited[value] = nil
 
     table.sort(parts)
     return table.concat(parts, "; ")

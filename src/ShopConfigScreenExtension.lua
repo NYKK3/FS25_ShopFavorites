@@ -8,10 +8,10 @@ ShopConfigScreenExtension = {}
 
 -- Configurazioni da applicare al prossimo storeItem aperto
 ShopConfigScreenExtension.pendingConfigurations = nil
+ShopConfigScreenExtension.pendingConfigurationData = nil
 -- StoreItem da aprire quando ShopConfigScreen viene mostrata dai preferiti
 ShopConfigScreenExtension.pendingStoreItem = nil
 ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
-ShopConfigScreenExtension.pendingDefaultConfigRestore = nil
 -- Action event ID per il tasto preferiti
 ShopConfigScreenExtension.favoriteActionEventId = nil
 -- Flag per verificare se l'azione e' gia' registrata
@@ -28,6 +28,23 @@ local function tableSize(tbl)
     end
 
     return count
+end
+
+local function deepCopyTable(source)
+    if type(source) ~= "table" then
+        return source
+    end
+
+    local copy = {}
+    for key, value in pairs(source) do
+        if type(value) == "table" then
+            copy[key] = deepCopyTable(value)
+        else
+            copy[key] = value
+        end
+    end
+
+    return copy
 end
 
 local function getScreenClassName(screenClass)
@@ -60,6 +77,54 @@ local function getCurrentFarmMoney()
     end
 
     return tostring(farm.money)
+end
+
+local function getStoreItemConfigurationNames(storeItem)
+    if storeItem == nil or storeItem.configurations == nil then
+        return "nil"
+    end
+
+    local names = {}
+    for configName in pairs(storeItem.configurations) do
+        table.insert(names, tostring(configName))
+    end
+
+    table.sort(names)
+    return table.concat(names, ",")
+end
+
+local function getBestMatchingConfigurationSet(configurationSets, configurations)
+    if configurationSets == nil or configurations == nil then
+        return nil
+    end
+
+    local bestSet = nil
+    local bestMatches = -1
+
+    for _, configSet in ipairs(configurationSets) do
+        local matches = 0
+        local total = 0
+
+        if configSet.configurations ~= nil then
+            for configName, configIndex in pairs(configSet.configurations) do
+                total = total + 1
+                if configurations[configName] == configIndex then
+                    matches = matches + 1
+                end
+            end
+        end
+
+        if total > 0 and matches == total then
+            return configSet
+        end
+
+        if matches > bestMatches then
+            bestMatches = matches
+            bestSet = configSet
+        end
+    end
+
+    return bestSet
 end
 
 function ShopConfigScreenExtension.logScreenState(shopConfigScreen, label)
@@ -98,10 +163,37 @@ function ShopConfigScreenExtension.logScreenState(shopConfigScreen, label)
         label, ShopFavoritesDebug.describeTableShallow(shopConfigScreen.configurations)))
     ShopFavoritesDebug.log(string.format("%s boughtConfigurations=%s",
         label, ShopFavoritesDebug.describeTableShallow(shopConfigScreen.boughtConfigurations)))
+    ShopFavoritesDebug.log(string.format("%s configurationData=%s",
+        label, ShopFavoritesDebug.describeTableDeep(shopConfigScreen.configurationData, 4)))
+
+    if shopConfigScreen.storeItem ~= nil then
+        ShopFavoritesDebug.log(string.format("%s storeItem.defaultConfigurationIds=%s",
+            label, ShopFavoritesDebug.describeTableShallow(shopConfigScreen.storeItem.defaultConfigurationIds)))
+        ShopFavoritesDebug.log(string.format("%s storeItem.configurationNames=%s",
+            label, getStoreItemConfigurationNames(shopConfigScreen.storeItem)))
+    end
+
+    local previewVehicle = nil
+    if shopConfigScreen.previewVehicles ~= nil then
+        previewVehicle = shopConfigScreen.previewVehicles[1]
+    end
+
+    if previewVehicle ~= nil then
+        ShopFavoritesDebug.log(string.format("%s previewVehicle.configFileName=%s",
+            label, tostring(previewVehicle.configFileName)))
+        ShopFavoritesDebug.log(string.format("%s previewVehicle.configurations=%s",
+            label, ShopFavoritesDebug.describeTableShallow(previewVehicle.configurations)))
+        ShopFavoritesDebug.log(string.format("%s previewVehicle.boughtConfigurations=%s",
+            label, ShopFavoritesDebug.describeTableShallow(previewVehicle.boughtConfigurations)))
+    end
 end
 
 function ShopConfigScreenExtension.setPendingConfigurations(configurations)
     ShopConfigScreenExtension.pendingConfigurations = configurations
+end
+
+function ShopConfigScreenExtension.setPendingConfigurationData(configurationData)
+    ShopConfigScreenExtension.pendingConfigurationData = configurationData
 end
 
 function ShopConfigScreenExtension.setPendingStoreItem(storeItem)
@@ -289,7 +381,20 @@ function ShopConfigScreenExtension:onSetStoreItem(shopConfigScreen, storeItem)
                         favoriteButton:setText(g_i18n:getText("sf_add_favorite"))
                     else
                         local configurations = ShopConfigScreenExtension.getCurrentConfigurations(shopConfigScreen)
-                        g_currentMission.FavoriteManager:addFavoriteFromStoreItem(storeItem, configurations)
+                        local configurationData = ShopConfigScreenExtension.getCurrentConfigurationData(shopConfigScreen)
+                        ShopFavoritesDebug.log(string.format("Saving favorite from shop screen storeItem=%s",
+                            tostring(storeItem.name)))
+                        ShopFavoritesDebug.log("Saving favorite configurations="
+                            .. ShopFavoritesDebug.describeTableShallow(configurations))
+                        ShopFavoritesDebug.log("Saving favorite configurationData="
+                            .. ShopFavoritesDebug.describeTableDeep(configurationData, 4))
+                        ShopFavoritesDebug.log("Saving favorite storeItem.defaultConfigurationIds="
+                            .. ShopFavoritesDebug.describeTableShallow(storeItem.defaultConfigurationIds))
+                        g_currentMission.FavoriteManager:addFavoriteFromStoreItem(
+                            storeItem,
+                            configurations,
+                            configurationData
+                        )
                         favoriteButton:setText(g_i18n:getText("sf_remove_favorite"))
                     end
                 end
@@ -317,6 +422,17 @@ function ShopConfigScreenExtension.getCurrentConfigurations(shopConfigScreen)
     end
 
     return configurations
+end
+
+function ShopConfigScreenExtension.getCurrentConfigurationData(shopConfigScreen)
+    if shopConfigScreen == nil or shopConfigScreen.configurationData == nil then
+        ShopFavoritesDebug.log("getCurrentConfigurationData returning empty table")
+        return {}
+    end
+
+    ShopFavoritesDebug.log("getCurrentConfigurationData raw="
+        .. ShopFavoritesDebug.describeTableDeep(shopConfigScreen.configurationData, 4))
+    return deepCopyTable(shopConfigScreen.configurationData)
 end
 
 function ShopConfigScreenExtension:updateButtons(shopConfigScreen, storeItem, vehicle, saleItem)
@@ -380,7 +496,29 @@ ShopConfigScreen.setStoreItem = Utils.prependedFunction(ShopConfigScreen.setStor
             tostring(isFavoriteStoreItem)))
 
         self.shopFavoritesOpenedFromFavorite = isFavoriteStoreItem
-        ShopConfigScreenExtension.pendingDefaultConfigRestore = nil
+        self.shopFavoritesPendingConfigurations = nil
+        self.shopFavoritesPendingConfigurationData = nil
+        self.shopFavoritesOriginalDefaultStoreItem = nil
+        self.shopFavoritesOriginalDefaultConfigurationIds = nil
+        self.shopFavoritesOriginalConfigurationSetDefaults = nil
+
+        if isFavoriteStoreItem then
+            self.shopFavoritesPendingConfigurations = deepCopyTable(ShopConfigScreenExtension.pendingConfigurations)
+            self.shopFavoritesPendingConfigurationData = deepCopyTable(ShopConfigScreenExtension.pendingConfigurationData)
+
+            if self.shopFavoritesPendingConfigurations ~= nil then
+                self.configurations = deepCopyTable(self.shopFavoritesPendingConfigurations)
+                self.boughtConfigurations = {}
+                ShopFavoritesDebug.log("Pre-seeding ShopConfigScreen.configurations before superFunc="
+                    .. ShopFavoritesDebug.describeTableShallow(self.configurations))
+            end
+
+            if self.shopFavoritesPendingConfigurationData ~= nil then
+                self.configurationData = deepCopyTable(self.shopFavoritesPendingConfigurationData)
+                ShopFavoritesDebug.log("Pre-seeding ShopConfigScreen.configurationData before superFunc="
+                    .. ShopFavoritesDebug.describeTableDeep(self.configurationData, 4))
+            end
+        end
 
         if isFavoriteStoreItem
             and ShopConfigScreenExtension.pendingConfigurations ~= nil
@@ -388,8 +526,8 @@ ShopConfigScreen.setStoreItem = Utils.prependedFunction(ShopConfigScreen.setStor
             local newDefaults = {}
 
             if storeItem.defaultConfigurationIds ~= nil then
-                for k, v in pairs(storeItem.defaultConfigurationIds) do
-                    newDefaults[k] = v
+                for configName, configIndex in pairs(storeItem.defaultConfigurationIds) do
+                    newDefaults[configName] = configIndex
                 end
             end
 
@@ -397,23 +535,72 @@ ShopConfigScreen.setStoreItem = Utils.prependedFunction(ShopConfigScreen.setStor
                 newDefaults[configName] = configIndex
             end
 
-            ShopConfigScreenExtension.pendingDefaultConfigRestore = {
-                storeItem = storeItem,
-                defaultConfigurationIds = storeItem.defaultConfigurationIds
-            }
-
+            self.shopFavoritesOriginalDefaultStoreItem = storeItem
+            self.shopFavoritesOriginalDefaultConfigurationIds = storeItem.defaultConfigurationIds
             storeItem.defaultConfigurationIds = newDefaults
+
+            ShopFavoritesDebug.log("Temporarily overriding storeItem.defaultConfigurationIds="
+                .. ShopFavoritesDebug.describeTableShallow(newDefaults))
+
+            if storeItem.configurationSets ~= nil and #storeItem.configurationSets > 0 then
+                self.shopFavoritesOriginalConfigurationSetDefaults = {}
+
+                for index, configSet in ipairs(storeItem.configurationSets) do
+                    self.shopFavoritesOriginalConfigurationSetDefaults[index] = configSet.isDefault == true
+                end
+
+                local bestSet = getBestMatchingConfigurationSet(
+                    storeItem.configurationSets,
+                    ShopConfigScreenExtension.pendingConfigurations
+                )
+
+                if bestSet ~= nil then
+                    for _, configSet in ipairs(storeItem.configurationSets) do
+                        configSet.isDefault = configSet == bestSet
+                    end
+
+                    ShopFavoritesDebug.log(string.format(
+                        "Temporarily overriding configurationSet default to '%s'",
+                        tostring(bestSet.name)
+                    ))
+                end
+            end
+        end
+
+        if isFavoriteStoreItem then
             ShopConfigScreenExtension.pendingConfigurations = nil
+            ShopConfigScreenExtension.pendingConfigurationData = nil
         end
     end)
 
 ShopConfigScreen.setStoreItem = Utils.appendedFunction(ShopConfigScreen.setStoreItem,
     function(self, storeItem, ...)
-        local restoreData = ShopConfigScreenExtension.pendingDefaultConfigRestore
-        if restoreData ~= nil and restoreData.storeItem == storeItem and storeItem ~= nil then
-            storeItem.defaultConfigurationIds = restoreData.defaultConfigurationIds
+        if self.shopFavoritesPendingConfigurations ~= nil then
+            ShopFavoritesDebug.log("Applying pending configurations to ShopConfigScreen="
+                .. ShopFavoritesDebug.describeTableShallow(self.shopFavoritesPendingConfigurations))
+            self.configurations = deepCopyTable(self.shopFavoritesPendingConfigurations)
+            self.boughtConfigurations = {}
+            self.shopFavoritesPendingConfigurations = nil
         end
-        ShopConfigScreenExtension.pendingDefaultConfigRestore = nil
+
+        if self.shopFavoritesPendingConfigurationData ~= nil then
+            ShopFavoritesDebug.log("Applying pending configurationData to ShopConfigScreen="
+                .. ShopFavoritesDebug.describeTableDeep(self.shopFavoritesPendingConfigurationData, 4))
+            self.configurationData = deepCopyTable(self.shopFavoritesPendingConfigurationData)
+            self.shopFavoritesPendingConfigurationData = nil
+        end
+
+        if self.storeItem ~= nil
+            and self.configurations ~= nil
+            and g_currentMission ~= nil
+            and g_currentMission.economyManager ~= nil then
+            self.totalPrice = g_currentMission.economyManager:getBuyPrice(
+                self.storeItem,
+                self.configurations,
+                self.saleItem
+            )
+            self.initialLeasingCosts = g_currentMission.economyManager:getInitialLeasingPrice(self.totalPrice)
+        end
 
         ShopConfigScreenExtension.logScreenState(self, "setStoreItem end")
         ShopConfigScreenExtension:onSetStoreItem(self, storeItem)
@@ -453,11 +640,36 @@ ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
         ShopConfigScreenExtension.logScreenState(self, "onClose")
         ShopConfigScreenExtension:unregisterActionEvent()
 
+        if self.shopFavoritesOriginalDefaultStoreItem ~= nil then
+            self.shopFavoritesOriginalDefaultStoreItem.defaultConfigurationIds =
+                self.shopFavoritesOriginalDefaultConfigurationIds
+            ShopFavoritesDebug.log("Restored original storeItem.defaultConfigurationIds onClose")
+        end
+
+        if self.shopFavoritesOriginalDefaultStoreItem ~= nil
+            and self.shopFavoritesOriginalConfigurationSetDefaults ~= nil
+            and self.shopFavoritesOriginalDefaultStoreItem.configurationSets ~= nil then
+            for index, wasDefault in pairs(self.shopFavoritesOriginalConfigurationSetDefaults) do
+                local configSet = self.shopFavoritesOriginalDefaultStoreItem.configurationSets[index]
+                if configSet ~= nil then
+                    configSet.isDefault = wasDefault
+                end
+            end
+
+            ShopFavoritesDebug.log("Restored original configurationSet defaults onClose")
+        end
+
         ShopConfigScreenExtension.pendingStoreItem = nil
         ShopConfigScreenExtension.pendingConfigurations = nil
+        ShopConfigScreenExtension.pendingConfigurationData = nil
         ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
 
         self.shopFavoritesOpenedFromFavorite = false
+        self.shopFavoritesPendingConfigurations = nil
+        self.shopFavoritesPendingConfigurationData = nil
+        self.shopFavoritesOriginalDefaultStoreItem = nil
+        self.shopFavoritesOriginalDefaultConfigurationIds = nil
+        self.shopFavoritesOriginalConfigurationSetDefaults = nil
     end)
 
 if ShopConfigScreen.onClickOk ~= nil then

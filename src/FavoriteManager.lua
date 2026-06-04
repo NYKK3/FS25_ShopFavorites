@@ -18,6 +18,110 @@ local function tableCount(t)
     return count
 end
 
+local function deepCopyTable(source)
+    if type(source) ~= "table" then
+        return source
+    end
+
+    local copy = {}
+    for key, value in pairs(source) do
+        if type(value) == "table" then
+            copy[key] = deepCopyTable(value)
+        else
+            copy[key] = value
+        end
+    end
+
+    return copy
+end
+
+local function isIntegerNumber(value)
+    return type(value) == "number" and math.floor(value) == value
+end
+
+local function saveSerializedValue(xmlFile, key, value)
+    local valueType = type(value)
+    setXMLString(xmlFile, key .. "#valueType", valueType)
+
+    if valueType == "table" then
+        local entryIndex = 0
+        for childKey, childValue in pairs(value) do
+            local entryKey = string.format("%s.entry(%d)", key, entryIndex)
+            local childKeyType = type(childKey)
+
+            setXMLString(xmlFile, entryKey .. "#keyType", childKeyType)
+            if childKeyType == "number" then
+                setXMLFloat(xmlFile, entryKey .. "#key", childKey)
+            else
+                setXMLString(xmlFile, entryKey .. "#key", tostring(childKey))
+            end
+
+            saveSerializedValue(xmlFile, entryKey, childValue)
+            entryIndex = entryIndex + 1
+        end
+    elseif valueType == "boolean" then
+        setXMLBool(xmlFile, key .. "#value", value)
+    elseif valueType == "number" then
+        if isIntegerNumber(value) then
+            setXMLInt(xmlFile, key .. "#value", value)
+            setXMLString(xmlFile, key .. "#numberType", "int")
+        else
+            setXMLFloat(xmlFile, key .. "#value", value)
+            setXMLString(xmlFile, key .. "#numberType", "float")
+        end
+    elseif valueType == "string" then
+        setXMLString(xmlFile, key .. "#value", value)
+    end
+end
+
+local function loadSerializedValue(xmlFile, key)
+    local valueType = getXMLString(xmlFile, key .. "#valueType")
+    if valueType == nil then
+        return nil
+    end
+
+    if valueType == "table" then
+        local value = {}
+        local entryIndex = 0
+
+        while true do
+            local entryKey = string.format("%s.entry(%d)", key, entryIndex)
+            if not hasXMLProperty(xmlFile, entryKey) then
+                break
+            end
+
+            local childKeyType = getXMLString(xmlFile, entryKey .. "#keyType")
+            local childKey
+            if childKeyType == "number" then
+                childKey = getXMLFloat(xmlFile, entryKey .. "#key")
+            else
+                childKey = getXMLString(xmlFile, entryKey .. "#key")
+            end
+
+            if childKey ~= nil then
+                value[childKey] = loadSerializedValue(xmlFile, entryKey)
+            end
+
+            entryIndex = entryIndex + 1
+        end
+
+        return value
+    elseif valueType == "boolean" then
+        return getXMLBool(xmlFile, key .. "#value")
+    elseif valueType == "number" then
+        local numberType = getXMLString(xmlFile, key .. "#numberType")
+        if numberType == "int" then
+            return getXMLInt(xmlFile, key .. "#value")
+        end
+
+        return getXMLFloat(xmlFile, key .. "#value")
+    elseif valueType == "string" then
+        return getXMLString(xmlFile, key .. "#value")
+    end
+
+    return nil
+end
+
 FavoriteManager = {}
 FavoriteManager.dir = g_currentModDirectory
 FavoriteManager.modName = g_currentModName
@@ -192,7 +296,7 @@ function FavoriteManager:getFavorites()
 end
 
 -- Aggiunge un preferito dallo storeItem
-function FavoriteManager:addFavoriteFromStoreItem(storeItem, configurations)
+function FavoriteManager:addFavoriteFromStoreItem(storeItem, configurations, configurationData)
     if storeItem == nil then return false end
     local xmlFilename = storeItem.xmlFilename
     if xmlFilename == nil or xmlFilename == "" then return false end
@@ -215,6 +319,7 @@ function FavoriteManager:addFavoriteFromStoreItem(storeItem, configurations)
         category = category,
         brand = brand,
         configurations = {},
+        configurationData = {},
         openCount = 0
     }
     
@@ -223,6 +328,17 @@ function FavoriteManager:addFavoriteFromStoreItem(storeItem, configurations)
             favorite.configurations[configName] = configIndex
         end
     end
+
+    if configurationData ~= nil then
+        favorite.configurationData = deepCopyTable(configurationData)
+    end
+
+    ShopFavoritesDebug.log(string.format("FavoriteManager.addFavoriteFromStoreItem xml=%s name=%s",
+        tostring(xmlFilename), tostring(name)))
+    ShopFavoritesDebug.log("FavoriteManager.addFavoriteFromStoreItem configurations="
+        .. ShopFavoritesDebug.describeTableShallow(favorite.configurations))
+    ShopFavoritesDebug.log("FavoriteManager.addFavoriteFromStoreItem configurationData="
+        .. ShopFavoritesDebug.describeTableDeep(favorite.configurationData, 4))
 
     table.insert(self.usersFavorites[self.currentUserId], favorite)
     self:saveToXMLFile()
@@ -248,6 +364,7 @@ function FavoriteManager:addFavorite(vehicle)
         category = "owned",
         brand = "",
         configurations = {},
+        configurationData = {},
         openCount = 0
     }
     
@@ -255,6 +372,10 @@ function FavoriteManager:addFavorite(vehicle)
         for configName, configIndex in pairs(vehicle.configurations) do
             favorite.configurations[configName] = configIndex
         end
+    end
+
+    if vehicle.configurationData ~= nil then
+        favorite.configurationData = deepCopyTable(vehicle.configurationData)
     end
     
     table.insert(self.usersFavorites[self.currentUserId], favorite)
@@ -361,6 +482,14 @@ local function saveFavoritesList(xmlFile, userKey, favorites)
                 configIndex = configIndex + 1
             end
         end
+
+        if favorite.configurationData ~= nil and next(favorite.configurationData) ~= nil then
+            ShopFavoritesDebug.log(string.format("saveFavoritesList configurationData for %s=%s",
+                tostring(favorite.xmlFilename),
+                ShopFavoritesDebug.describeTableDeep(favorite.configurationData, 4)))
+            saveSerializedValue(xmlFile, favKey .. ".configurationData", favorite.configurationData)
+        end
+
         favIndex = favIndex + 1
     end
 end
@@ -420,8 +549,23 @@ local function loadFavoritesList(xmlFile, userKey)
             category = getXMLString(xmlFile, favKey .. "#category"),
             brand = getXMLString(xmlFile, favKey .. "#brand"),
             configurations = {},
+            configurationData = {},
             openCount = getXMLInt(xmlFile, favKey .. "#openCount") or 0
         }
+
+        if hasXMLProperty(xmlFile, favKey .. ".configurationData") then
+            local configurationData = loadSerializedValue(xmlFile, favKey .. ".configurationData")
+            if type(configurationData) == "table" then
+                favorite.configurationData = configurationData
+            end
+        end
+
+        ShopFavoritesDebug.log(string.format("loadFavoritesList favorite=%s configurations=%s",
+            tostring(favorite.xmlFilename),
+            ShopFavoritesDebug.describeTableShallow(favorite.configurations)))
+        ShopFavoritesDebug.log(string.format("loadFavoritesList favorite=%s configurationData=%s",
+            tostring(favorite.xmlFilename),
+            ShopFavoritesDebug.describeTableDeep(favorite.configurationData, 4)))
         
         local configIndex = 0
         while true do
@@ -429,7 +573,7 @@ local function loadFavoritesList(xmlFile, userKey)
             if not hasXMLProperty(xmlFile, configKey) then break end
             local configName = getXMLString(xmlFile, configKey .. "#name")
             local configValue = getXMLInt(xmlFile, configKey .. "#index")
-            if configName ~= nil and configValue ~= nil then
+            if configName ~= nil and configValue ~= nil and favorite.configurations[configName] == nil then
                 favorite.configurations[configName] = configValue
             end
             configIndex = configIndex + 1

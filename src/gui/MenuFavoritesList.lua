@@ -285,6 +285,14 @@ function MenuFavoritesList:onBuyFavorite()
         ShopConfigScreenExtension.setPendingConfigurations(nil)
     end
 
+    if favorite.configurationData ~= nil and tableCount(favorite.configurationData) > 0 then
+        ShopFavoritesDebug.log("Setting pending configurationData")
+        ShopConfigScreenExtension.setPendingConfigurationData(favorite.configurationData)
+    else
+        ShopFavoritesDebug.log("No configurationData to set")
+        ShopConfigScreenExtension.setPendingConfigurationData(nil)
+    end
+
     ShopFavoritesDebug.log("Checking if ShopConfigScreen controller exists")
     local shopConfigScreen = g_gui.screenControllers[ShopConfigScreen]
     if shopConfigScreen ~= nil then
