@@ -11,12 +11,94 @@ ShopConfigScreenExtension.pendingConfigurations = nil
 -- StoreItem da aprire quando ShopConfigScreen viene mostrata dai preferiti
 ShopConfigScreenExtension.pendingStoreItem = nil
 ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
--- StoreItem originale per ripristinare i default
-ShopConfigScreenExtension.originalDefaultConfigIds = nil
+ShopConfigScreenExtension.pendingDefaultConfigRestore = nil
 -- Action event ID per il tasto preferiti
 ShopConfigScreenExtension.favoriteActionEventId = nil
 -- Flag per verificare se l'azione e' gia' registrata
 ShopConfigScreenExtension.isActionRegistered = false
+
+local function tableSize(tbl)
+    if tbl == nil then
+        return 0
+    end
+
+    local count = 0
+    for _ in pairs(tbl) do
+        count = count + 1
+    end
+
+    return count
+end
+
+local function getScreenClassName(screenClass)
+    if screenClass == nil then
+        return "nil"
+    elseif screenClass == ShopMenu then
+        return "ShopMenu"
+    elseif screenClass == ShopConfigScreen then
+        return "ShopConfigScreen"
+    elseif screenClass == WorkshopScreen then
+        return "WorkshopScreen"
+    end
+
+    return tostring(screenClass)
+end
+
+local function getCurrentFarmMoney()
+    if g_currentMission == nil or g_farmManager == nil or g_currentMission.getFarmId == nil then
+        return "nil"
+    end
+
+    local farmId = g_currentMission:getFarmId()
+    if farmId == nil then
+        return "nil"
+    end
+
+    local farm = g_farmManager:getFarmById(farmId)
+    if farm == nil or farm.money == nil then
+        return "nil"
+    end
+
+    return tostring(farm.money)
+end
+
+function ShopConfigScreenExtension.logScreenState(shopConfigScreen, label)
+    if not ShopFavoritesDebug.enabled then
+        return
+    end
+
+    if shopConfigScreen == nil then
+        ShopFavoritesDebug.log(label .. " screen=nil")
+        return
+    end
+
+    local storeItemName = shopConfigScreen.storeItem ~= nil and shopConfigScreen.storeItem.name or "nil"
+    local returnScreen = getScreenClassName(shopConfigScreen.returnScreenClass)
+    local vehicleId = shopConfigScreen.vehicle ~= nil and tostring(shopConfigScreen.vehicle:getUniqueId()) or "nil"
+    local workshop = tostring(ShopConfigScreenExtension.isWorkshopContext(shopConfigScreen))
+
+    ShopFavoritesDebug.log(string.format(
+        "%s storeItem=%s returnScreen=%s vehicle=%s workshop=%s totalPrice=%s configBasePrice=%s lastMoney=%s farmMoney=%s favoriteContext=%s configs=%d boughtConfigs=%d previewVehicles=%d",
+        label,
+        tostring(storeItemName),
+        tostring(returnScreen),
+        tostring(vehicleId),
+        workshop,
+        tostring(shopConfigScreen.totalPrice),
+        tostring(shopConfigScreen.configBasePrice),
+        tostring(shopConfigScreen.lastMoney),
+        getCurrentFarmMoney(),
+        tostring(shopConfigScreen.shopFavoritesOpenedFromFavorite == true),
+        tableSize(shopConfigScreen.configurations),
+        tableSize(shopConfigScreen.boughtConfigurations),
+        tableSize(shopConfigScreen.previewVehicles)
+    ))
+
+    ShopFavoritesDebug.log(string.format("%s configurations=%s",
+        label, ShopFavoritesDebug.describeTableShallow(shopConfigScreen.configurations)))
+    ShopFavoritesDebug.log(string.format("%s boughtConfigurations=%s",
+        label, ShopFavoritesDebug.describeTableShallow(shopConfigScreen.boughtConfigurations)))
+end
 
 function ShopConfigScreenExtension.setPendingConfigurations(configurations)
     ShopConfigScreenExtension.pendingConfigurations = configurations
@@ -54,6 +136,10 @@ function ShopConfigScreenExtension.showNoPermissionDialog()
     InfoDialog.show(g_i18n:getText("shop_messageNoPermissionGeneral"))
 end
 
+function ShopConfigScreenExtension.isWorkshopContext(shopConfigScreen)
+    return shopConfigScreen ~= nil and shopConfigScreen.returnScreenClass == WorkshopScreen
+end
+
 function ShopConfigScreenExtension.closePurchaseScreens()
     if g_gui ~= nil then
         g_gui:closeDialogByName("YesNoDialog")
@@ -64,7 +150,9 @@ end
 function ShopConfigScreenExtension.createVehicleBuyData(shopConfigScreen, leaseVehicle, farmId)
     local data = BuyVehicleData.new()
     data:setStoreItem(shopConfigScreen.storeItem)
-    data:setConfigurations(shopConfigScreen.configurations, shopConfigScreen.boughtConfigurations)
+    -- Per un acquisto nuovo non dobbiamo riusare boughtConfigurations della schermata,
+    -- altrimenti il veicolo puo' nascere con upgrade gia' segnati come acquistati.
+    data:setConfigurations(shopConfigScreen.configurations)
     data:setConfigurationData(shopConfigScreen.configurationData)
     data:setLeaseVehicle(leaseVehicle)
     data:setOwnerFarmId(farmId)
@@ -95,6 +183,9 @@ function ShopConfigScreenExtension.executeFavoritePurchase(shopConfigScreen, lea
     if shopConfigScreen == nil or shopConfigScreen.storeItem == nil or g_currentMission == nil then
         return false
     end
+
+    ShopConfigScreenExtension.logScreenState(shopConfigScreen,
+        string.format("Executing favorite purchase flow lease=%s", tostring(leaseVehicle)))
 
     if not ShopConfigScreenExtension.hasBuyPermission() then
         ShopConfigScreenExtension.showNoPermissionDialog()
@@ -141,8 +232,28 @@ function ShopConfigScreenExtension.executeFavoritePurchase(shopConfigScreen, lea
     return false
 end
 
+function ShopConfigScreenExtension.shouldHandleFavoritePurchase(shopConfigScreen)
+    return shopConfigScreen ~= nil
+        and shopConfigScreen.shopFavoritesOpenedFromFavorite == true
+        and shopConfigScreen.vehicle == nil
+        and not ShopConfigScreenExtension.isWorkshopContext(shopConfigScreen)
+end
+
 -- Aggiunge un pulsante per aggiungere/rimuovere dai preferiti nella schermata di configurazione del negozio
 function ShopConfigScreenExtension:onSetStoreItem(shopConfigScreen, storeItem)
+    ShopConfigScreenExtension.logScreenState(shopConfigScreen, "onSetStoreItem")
+
+    if ShopConfigScreenExtension.isWorkshopContext(shopConfigScreen) then
+        if shopConfigScreen.favoriteButton ~= nil then
+            shopConfigScreen.favoriteButton:setDisabled(true)
+            shopConfigScreen.favoriteButton:setVisible(false)
+        end
+
+        ShopFavoritesDebug.log("Workshop context detected in onSetStoreItem, favorite button disabled")
+        ShopConfigScreenExtension:unregisterActionEvent()
+        return
+    end
+
     local sourceButton = shopConfigScreen.buyButton
     local favoriteButton = shopConfigScreen.favoriteButton
 
@@ -207,7 +318,15 @@ end
 
 function ShopConfigScreenExtension:updateButtons(shopConfigScreen, storeItem, vehicle, saleItem)
     if shopConfigScreen.favoriteButton then
+        if ShopConfigScreenExtension.isWorkshopContext(shopConfigScreen) then
+            shopConfigScreen.favoriteButton:setVisible(false)
+            shopConfigScreen.favoriteButton:setDisabled(true)
+            ShopConfigScreenExtension.logScreenState(shopConfigScreen, "updateButtons workshop context")
+            return
+        end
+
         shopConfigScreen.favoriteButton:setVisible(vehicle == nil and saleItem == nil)
+        ShopConfigScreenExtension.logScreenState(shopConfigScreen, "updateButtons normal context")
     end
 end
 
@@ -247,32 +366,53 @@ function ShopConfigScreenExtension.onToggleFavoriteInput(shopConfigScreen)
     end
 end
 
-ShopConfigScreen.setStoreItem = Utils.overwrittenFunction(ShopConfigScreen.setStoreItem,
-    function(self, superFunc, storeItem, ...)
-        self.shopFavoritesOpenedFromFavorite = ShopConfigScreenExtension.isApplyingFavoriteStoreItem == true
+ShopConfigScreen.setStoreItem = Utils.prependedFunction(ShopConfigScreen.setStoreItem,
+    function(self, storeItem, ...)
+        local isFavoriteStoreItem = ShopConfigScreenExtension.isApplyingFavoriteStoreItem == true
+            and not ShopConfigScreenExtension.isWorkshopContext(self)
 
-        if ShopConfigScreenExtension.pendingConfigurations ~= nil and storeItem ~= nil then
-            local configsToApply = ShopConfigScreenExtension.pendingConfigurations
+        ShopFavoritesDebug.log(string.format("setStoreItem begin storeItem=%s pendingConfigs=%s applyingFavorite=%s",
+            tostring(storeItem ~= nil and storeItem.name or "nil"),
+            tostring(ShopConfigScreenExtension.pendingConfigurations ~= nil),
+            tostring(isFavoriteStoreItem)))
 
-            ShopConfigScreenExtension.originalDefaultConfigIds = storeItem.defaultConfigurationIds
+        self.shopFavoritesOpenedFromFavorite = isFavoriteStoreItem
+        ShopConfigScreenExtension.pendingDefaultConfigRestore = nil
 
+        if isFavoriteStoreItem
+            and ShopConfigScreenExtension.pendingConfigurations ~= nil
+            and storeItem ~= nil then
             local newDefaults = {}
+
             if storeItem.defaultConfigurationIds ~= nil then
                 for k, v in pairs(storeItem.defaultConfigurationIds) do
                     newDefaults[k] = v
                 end
             end
 
-            for configName, configIndex in pairs(configsToApply) do
+            for configName, configIndex in pairs(ShopConfigScreenExtension.pendingConfigurations) do
                 newDefaults[configName] = configIndex
             end
+
+            ShopConfigScreenExtension.pendingDefaultConfigRestore = {
+                storeItem = storeItem,
+                defaultConfigurationIds = storeItem.defaultConfigurationIds
+            }
 
             storeItem.defaultConfigurationIds = newDefaults
             ShopConfigScreenExtension.pendingConfigurations = nil
         end
+    end)
 
-        superFunc(self, storeItem, ...)
+ShopConfigScreen.setStoreItem = Utils.appendedFunction(ShopConfigScreen.setStoreItem,
+    function(self, storeItem, ...)
+        local restoreData = ShopConfigScreenExtension.pendingDefaultConfigRestore
+        if restoreData ~= nil and restoreData.storeItem == storeItem and storeItem ~= nil then
+            storeItem.defaultConfigurationIds = restoreData.defaultConfigurationIds
+        end
+        ShopConfigScreenExtension.pendingDefaultConfigRestore = nil
 
+        ShopConfigScreenExtension.logScreenState(self, "setStoreItem end")
         ShopConfigScreenExtension:onSetStoreItem(self, storeItem)
     end)
 
@@ -282,9 +422,13 @@ ShopConfigScreen.updateButtons = Utils.prependedFunction(ShopConfigScreen.update
     end)
 
 -- Consuma il preferito dopo che la GUI ha completato il cambio schermata.
-Gui.changeScreen = Utils.overwrittenFunction(Gui.changeScreen,
-    function(self, superFunc, sourceScreen, screenClass, returnScreenClass)
-        local result = superFunc(self, sourceScreen, screenClass, returnScreenClass)
+Gui.changeScreen = Utils.appendedFunction(Gui.changeScreen,
+    function(self, sourceScreen, screenClass, returnScreenClass)
+        ShopFavoritesDebug.log(string.format("Gui.changeScreen source=%s target=%s return=%s pendingStoreItem=%s",
+            getScreenClassName(sourceScreen),
+            getScreenClassName(screenClass),
+            getScreenClassName(returnScreenClass),
+            tostring(ShopConfigScreenExtension.pendingStoreItem ~= nil)))
 
         if screenClass == ShopConfigScreen and ShopConfigScreenExtension.pendingStoreItem ~= nil then
             local shopConfigScreen = self.screenControllers[ShopConfigScreen]
@@ -292,47 +436,49 @@ Gui.changeScreen = Utils.overwrittenFunction(Gui.changeScreen,
             ShopConfigScreenExtension.pendingStoreItem = nil
 
             if shopConfigScreen ~= nil then
-                -- La schermata mantiene stato tra aperture. Puliamo il riferimento
-                -- precedente prima di assegnare l'articolo richiesto dal preferito.
-                shopConfigScreen.storeItem = nil
                 ShopConfigScreenExtension.initializeFinancialState(shopConfigScreen)
                 ShopConfigScreenExtension.isApplyingFavoriteStoreItem = true
+                ShopConfigScreenExtension.logScreenState(shopConfigScreen, "Applying pending favorite storeItem")
                 shopConfigScreen:setStoreItem(storeItem)
                 ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
             end
         end
-
-        return result
     end)
 
 ShopConfigScreen.onClose = Utils.appendedFunction(ShopConfigScreen.onClose,
     function(self)
+        ShopConfigScreenExtension.logScreenState(self, "onClose")
         ShopConfigScreenExtension:unregisterActionEvent()
-
-        if ShopConfigScreenExtension.originalDefaultConfigIds ~= nil and self.storeItem ~= nil then
-            self.storeItem.defaultConfigurationIds = ShopConfigScreenExtension.originalDefaultConfigIds
-            ShopConfigScreenExtension.originalDefaultConfigIds = nil
-        end
 
         ShopConfigScreenExtension.pendingStoreItem = nil
         ShopConfigScreenExtension.pendingConfigurations = nil
         ShopConfigScreenExtension.isApplyingFavoriteStoreItem = false
 
-        -- Evita che l'istanza della schermata riutilizzi stato vecchio
-        -- alla successiva apertura da un preferito.
-        self.storeItem = nil
-        self.saleItem = nil
-        self.vehicle = nil
         self.shopFavoritesOpenedFromFavorite = false
-        self.configurations = {}
-        self.configurationData = {}
-        self.previewVehicles = {}
     end)
+
+if ShopConfigScreen.onClickOk ~= nil then
+    ShopConfigScreen.onClickOk = Utils.overwrittenFunction(ShopConfigScreen.onClickOk,
+        function(self, superFunc, ...)
+            ShopConfigScreenExtension.logScreenState(self, "onClickOk before")
+            return superFunc(self, ...)
+        end)
+end
+
+if ShopConfigScreen.onClickActivate ~= nil then
+    ShopConfigScreen.onClickActivate = Utils.overwrittenFunction(ShopConfigScreen.onClickActivate,
+        function(self, superFunc, ...)
+            ShopConfigScreenExtension.logScreenState(self, "onClickActivate before")
+            return superFunc(self, ...)
+        end)
+end
 
 if ShopConfigScreen.onYesNoBuy ~= nil then
     ShopConfigScreen.onYesNoBuy = Utils.overwrittenFunction(ShopConfigScreen.onYesNoBuy,
         function(self, superFunc, yes, ...)
-            if yes and self.shopFavoritesOpenedFromFavorite == true and self.vehicle == nil then
+            ShopConfigScreenExtension.logScreenState(self, "onYesNoBuy before")
+            if yes and ShopConfigScreenExtension.shouldHandleFavoritePurchase(self) then
+                ShopFavoritesDebug.log("Intercepting ShopConfigScreen.onYesNoBuy for favorite purchase")
                 local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, false)
                 if handled then
                     return
@@ -346,7 +492,9 @@ end
 if ShopConfigScreen.onYesNoLease ~= nil then
     ShopConfigScreen.onYesNoLease = Utils.overwrittenFunction(ShopConfigScreen.onYesNoLease,
         function(self, superFunc, yes, ...)
-            if yes and self.shopFavoritesOpenedFromFavorite == true and self.vehicle == nil then
+            ShopConfigScreenExtension.logScreenState(self, "onYesNoLease before")
+            if yes and ShopConfigScreenExtension.shouldHandleFavoritePurchase(self) then
+                ShopFavoritesDebug.log("Intercepting ShopConfigScreen.onYesNoLease for favorite lease")
                 local handled = ShopConfigScreenExtension.executeFavoritePurchase(self, true)
                 if handled then
                     return
@@ -354,5 +502,19 @@ if ShopConfigScreen.onYesNoLease ~= nil then
             end
 
             return superFunc(self, yes, ...)
+        end)
+end
+
+if WorkshopScreen ~= nil and WorkshopScreen.onOpen ~= nil then
+    WorkshopScreen.onOpen = Utils.appendedFunction(WorkshopScreen.onOpen,
+        function(self)
+            ShopFavoritesDebug.log(string.format("WorkshopScreen.onOpen vehicles=%d", tableSize(self.vehicles)))
+        end)
+end
+
+if WorkshopScreen ~= nil and WorkshopScreen.onClose ~= nil then
+    WorkshopScreen.onClose = Utils.appendedFunction(WorkshopScreen.onClose,
+        function(self)
+            ShopFavoritesDebug.log("WorkshopScreen.onClose")
         end)
 end

@@ -114,6 +114,7 @@ Funkcje:
     </description>
     <extraSourceFiles>
         <sourceFile filename="src/ShopFavoritesDebug.lua"/>
+        <sourceFile filename="src/ChangeVehicleConfigEventExtension.lua"/>
         <sourceFile filename="src/FavoriteManager.lua"/>
         <sourceFile filename="src/BuyVehicleDataExtension.lua"/>
         <sourceFile filename="src/VehicleExtension.lua"/>
