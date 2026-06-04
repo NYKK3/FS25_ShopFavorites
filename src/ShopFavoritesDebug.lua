@@ -1,5 +1,5 @@
 ShopFavoritesDebug = {
-    enabled = true
+    enabled = false
 }
 
 function ShopFavoritesDebug.log(message)
