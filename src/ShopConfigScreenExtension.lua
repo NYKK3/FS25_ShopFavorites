@@ -143,7 +143,6 @@ end
 function ShopConfigScreenExtension.closePurchaseScreens()
     if g_gui ~= nil then
         g_gui:closeDialogByName("YesNoDialog")
-        g_gui:changeScreen(nil, ShopMenu)
     end
 end
 
@@ -200,10 +199,12 @@ function ShopConfigScreenExtension.executeFavoritePurchase(shopConfigScreen, lea
         if data:isValid() then
             data:updatePrice()
 
-            if g_server == nil and g_client ~= nil then
+            if g_client ~= nil and g_client.getServerConnection ~= nil then
+                ShopFavoritesDebug.log("Sending BuyVehicleEvent through client connection")
                 g_client:getServerConnection():sendEvent(BuyVehicleEvent.new(data))
                 ShopConfigScreenExtension.closePurchaseScreens()
             else
+                ShopFavoritesDebug.log("Executing local BuyVehicleData:buy fallback")
                 data:buy(g_currentMission.storeSpawnPlaces, g_currentMission.usedStorePlaces, function()
                     g_gui:changeScreen(nil, ShopMenu)
                 end)
@@ -216,10 +217,12 @@ function ShopConfigScreenExtension.executeFavoritePurchase(shopConfigScreen, lea
         if data:isValid() then
             data:updatePrice()
 
-            if g_server == nil and g_client ~= nil then
+            if g_client ~= nil and g_client.getServerConnection ~= nil then
+                ShopFavoritesDebug.log("Sending BuyHandToolEvent through client connection")
                 g_client:getServerConnection():sendEvent(BuyHandToolEvent.new(data))
                 ShopConfigScreenExtension.closePurchaseScreens()
             else
+                ShopFavoritesDebug.log("Executing local BuyHandToolData:buy fallback")
                 data:buy(function()
                     g_gui:changeScreen(nil, ShopMenu)
                 end)
