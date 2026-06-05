@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Favoritter"/>
+        <text name="sf_add_favorite" text="Legg til i favoritter"/>
+        <text name="sf_remove_favorite" text="Fjern fra favoritter"/>
+        <text name="sf_is_favorite" text="Favoritt"/>
+        <text name="sf_unknown_vehicle" text="Ukjent kjoretoy"/>
+        <text name="sf_header_vehicle_type" text="Kjoretoytype"/>
+        <text name="sf_btn_remove" text="Fjern"/>
+        <text name="sf_removed_favorite" text="Element fjernet fra favoritter"/>
+        <text name="sf_confirm_remove" text="Er du sikker pa at du vil fjerne '%s' fra favoritter?"/>
+        <text name="sf_error_not_found" text="Kjoretoy ble ikke funnet i butikken"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Butikkfavoritter: Legg til/Fjern favoritt"/>
+    </texts>
+</l10n>

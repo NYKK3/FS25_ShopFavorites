@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Oblibene"/>
+        <text name="sf_add_favorite" text="Pridat do oblibenych"/>
+        <text name="sf_remove_favorite" text="Odebrat z oblibenych"/>
+        <text name="sf_is_favorite" text="Oblibene"/>
+        <text name="sf_unknown_vehicle" text="Nezname vozidlo"/>
+        <text name="sf_header_vehicle_type" text="Typ vozidla"/>
+        <text name="sf_btn_remove" text="Odebrat"/>
+        <text name="sf_removed_favorite" text="Polozka byla odebrana z oblibenych"/>
+        <text name="sf_confirm_remove" text="Opravdu chcete odebrat '%s' z oblibenych?"/>
+        <text name="sf_error_not_found" text="Vozidlo nebylo v obchode nalezeno"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Oblibene v obchode: Pridat/Odebrat oblibene"/>
+    </texts>
+</l10n>

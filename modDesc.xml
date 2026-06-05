@@ -18,12 +18,16 @@
 A mod that adds a favorites section to the shop menu where you can save your favorite vehicles and tools.
 
 - Add vehicles and tools to your favorites list
+- Save the selected shop configuration for each favorite
 - Access favorites from a new tab in the shop menu
 - Quick access to your most used items
 - Add/remove items directly from the purchase screen
+- Buy or lease directly from the favorites page
 
 Features:
 - Favorites are saved in the modSettings folder and are shared across all saves; missing favorites in a save will be hidden and not deleted
+- Saved favorites remember selected configurations such as engine setup, wheels, colors, body options and other supported customizations
+- Multiplayer supported, including normal permission checks for purchases
 - Works with all vehicles (tractors, machines, cars, trailers) and mods
 
 ]]></en>
@@ -32,12 +36,16 @@ Features:
 Ein Mod, der eine Favoritensektion zum Ladenmenü hinzufügt, in dem Sie Ihre bevorzugten Fahrzeuge und Werkzeuge speichern können.
 
 - Fügen Sie Fahrzeuge und Werkzeuge zu Ihrer Favoritenliste hinzu
+- Speichern Sie die im Shop gewählte Konfiguration für jeden Favoriten
 - Greifen Sie über eine neue Registerkarte im Shop-Menü auf Favoriten zu
 - Schneller Zugriff auf Ihre am häufigsten verwendeten Artikel
 - Elemente direkt vom Kaufbildschirm hinzufügen/entfernen
+- Direkt von der Favoritenseite kaufen oder leasen
 
 Funktionen:
 - Favoriten werden im Ordner modSettings gespeichert und mit allen Spielständen geteilt; fehlende Favoriten in einem Spielstand werden ausgeblendet und nicht gelöscht
+- Gespeicherte Favoriten merken sich gewählte Konfigurationen wie Motor, Räder, Farben, Aufbauten und andere unterstützte Anpassungen
+- Multiplayer wird unterstützt, einschließlich der normalen Kaufberechtigungen
 - Funktioniert mit allen Fahrzeugen (Traktoren, Maschinen, Autos, Anhänger) und Mods
 
 ]]></de>
@@ -46,12 +54,16 @@ Funktionen:
 Un mod qui ajoute une section de favoris au menu du magasin où vous pouvez enregistrer vos véhicules et outils préférés.
 
 - Ajouter des véhicules et des outils à votre liste de favoris
+- Enregistrer pour chaque favori la configuration choisie dans le magasin
 - Accéder aux favoris depuis un nouvel onglet dans le menu boutique
 - Accès rapide à vos articles les plus utilisés
 - Ajouter/supprimer des éléments directement depuis l'écran d'achat
+- Acheter ou louer directement depuis la page des favoris
 
 Fonctionnalités :
 - Les favoris sont enregistrés dans le dossier modSettings et sont partagés entre toutes les parties ; les favoris manquants dans une partie seront masqués et non supprimés
+- Les favoris enregistrés conservent aussi les configurations choisies comme le moteur, les roues, les couleurs, les carrosseries et autres personnalisations prises en charge
+- Compatible multijoueur en respectant les autorisations normales d'achat
 - Fonctionne avec tous les véhicules (tracteurs, machines, voitures, remorques) et les mods
 
 ]]></fr>
@@ -60,12 +72,16 @@ Fonctionnalités :
 Una mod che aggiunge una sezione preferiti al menù del negozio dove puoi salvare i tuoi veicoli e attrezzi preferiti.
 
 - Aggiungi veicoli e attrezzi alla tua lista dei preferiti
+- Salva per ogni preferito la configurazione scelta nel negozio
 - Accedi ai preferiti da una nuova scheda nel menu degli acquisti
 - Accesso rapido agli oggetti più utilizzati
 - Aggiungi/rimuovi elementi direttamente dalla schermata di acquisto
+- Compra o noleggia direttamente dalla pagina dei preferiti
 
 Caratteristiche:
 - I preferiti sono salvati nella cartella modSettings e sono condivisi con tutte le partite, i preferiti che mancano in una partita verranno nascosti e non cancellati
+- I preferiti salvano anche le personalizzazioni scelte, come motore, ruote, colori, allestimenti e altre configurazioni supportate
+- Supporta il multiplayer rispettando i normali permessi di acquisto
 - Funziona con tutti i veicoli (trattori, attrezzi, macchine, rimorchi) e mods
 
 ]]></it>
@@ -74,12 +90,16 @@ Caratteristiche:
 Un mod que añade una sección de favoritos al menú de la tienda donde puedes guardar tus vehículos y herramientas favoritos.
 
 - Añadir vehículos y herramientas a tu lista de favoritos
+- Guardar para cada favorito la configuración elegida en la tienda
 - Acceder a los favoritos desde una nueva pestaña en el menú de la tienda
 - Acceso rápido a tus artículos más utilizados
 - Añadir/quitar elementos directamente desde la pantalla de compra
+- Comprar o alquilar directamente desde la página de favoritos
 
 Características:
 - Los favoritos se guardan en la carpeta modSettings y se comparten entre todas las partidas; los favoritos que falten en una partida se ocultarán y no se eliminarán
+- Los favoritos guardados también recuerdan las configuraciones elegidas, como motor, ruedas, colores, carrocerías y otras personalizaciones compatibles
+- Compatible con multijugador respetando los permisos normales de compra
 - Funciona con todos los vehículos (tractores, máquinas, coches, remolques) y mods
 
 ]]></es>
@@ -88,12 +108,16 @@ Características:
 Mod dodający sekcję ulubionych do menu sklepu, gdzie możesz zapisać swoje ulubione pojazdy i narzędzia.
 
 - Dodawaj pojazdy i narzędzia do listy ulubionych
+- Zapisuj dla każdego ulubionego wybraną konfigurację ze sklepu
 - Uzyskaj dostęp do ulubionych z nowej zakładki w menu sklepu
 - Szybki dostęp do najczęściej używanych przedmiotów
 - Dodawaj/usuwaj przedmioty bezpośrednio z ekranu zakupu
+- Kupuj lub wynajmuj bezpośrednio ze strony ulubionych
 
 Funkcje:
 - Ulubione są zapisywane w folderze modSettings i są współdzielone między wszystkimi grami; brakujące ulubione w jednej grze będą ukryte i nie zostaną usunięte
+- Zapisane ulubione pamiętają także wybrane konfiguracje, takie jak silnik, koła, kolory, zabudowy i inne obsługiwane modyfikacje
+- Obsługuje tryb wieloosobowy z zachowaniem standardowych uprawnień zakupu
 - Działa ze wszystkimi pojazdami (ciągniki, maszyny, samochody, przyczepy) i modami
 
 ]]></pl>
@@ -102,12 +126,16 @@ Funkcje:
 Мод, добавляющий раздел избранного в меню магазина, где вы можете сохранять свои любимые транспортные средства и инструменты.
 
 - Добавляйте транспортные средства и инструменты в список избранного
+- Сохраняйте для каждого избранного выбранную в магазине конфигурацию
 - Получайте доступ к избранному из новой вкладки в меню магазина
 - Быстрый доступ к часто используемым предметам
 - Добавляйте/удаляйте предметы прямо из экрана покупки
+- Покупайте или берите в аренду прямо со страницы избранного
 
 Особенности:
 - Избранное сохраняется в папке modSettings и совместно используется во всех сохранениях; отсутствующие избранные в сохранении будут скрыты и не удалены
+- Сохраненные избранные также запоминают выбранные конфигурации, такие как двигатель, колеса, цвета, кузов и другие поддерживаемые настройки
+- Поддерживается мультиплеер с соблюдением обычных прав на покупку
 - Работает со всеми транспортными средствами (трактора, машины, автомобили, прицепы) и модами
 
 ]]></ru>

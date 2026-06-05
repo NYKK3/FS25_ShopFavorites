@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Kedvencek"/>
+        <text name="sf_add_favorite" text="Hozzaadas a kedvencekhez"/>
+        <text name="sf_remove_favorite" text="Eltavolitas a kedvencek kozul"/>
+        <text name="sf_is_favorite" text="Kedvenc"/>
+        <text name="sf_unknown_vehicle" text="Ismeretlen jarmu"/>
+        <text name="sf_header_vehicle_type" text="Jarmu tipusa"/>
+        <text name="sf_btn_remove" text="Eltavolitas"/>
+        <text name="sf_removed_favorite" text="Az elem eltavolitva a kedvencek kozul"/>
+        <text name="sf_confirm_remove" text="Biztosan el szeretned tavolitani ezt a kedvencek kozul: '%s'?"/>
+        <text name="sf_error_not_found" text="A jarmu nem talalhato az uzletben"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Bolt kedvencek: Kedvenc hozzaadasa/eltavolitasa"/>
+    </texts>
+</l10n>

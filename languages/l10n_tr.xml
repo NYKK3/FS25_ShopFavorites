@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Favoriler"/>
+        <text name="sf_add_favorite" text="Favorilere ekle"/>
+        <text name="sf_remove_favorite" text="Favorilerden kaldir"/>
+        <text name="sf_is_favorite" text="Favori"/>
+        <text name="sf_unknown_vehicle" text="Bilinmeyen arac"/>
+        <text name="sf_header_vehicle_type" text="Arac tipi"/>
+        <text name="sf_btn_remove" text="Kaldir"/>
+        <text name="sf_removed_favorite" text="Oge favorilerden kaldirildi"/>
+        <text name="sf_confirm_remove" text="'%s' ogesini favorilerden kaldirmak istediginize emin misiniz?"/>
+        <text name="sf_error_not_found" text="Arac magazada bulunamadi"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Magaza favorileri: Favori ekle/kaldir"/>
+    </texts>
+</l10n>

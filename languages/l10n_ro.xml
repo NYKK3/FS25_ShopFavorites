@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Favorite"/>
+        <text name="sf_add_favorite" text="Adauga la favorite"/>
+        <text name="sf_remove_favorite" text="Elimina din favorite"/>
+        <text name="sf_is_favorite" text="Favorit"/>
+        <text name="sf_unknown_vehicle" text="Vehicul necunoscut"/>
+        <text name="sf_header_vehicle_type" text="Tip vehicul"/>
+        <text name="sf_btn_remove" text="Elimina"/>
+        <text name="sf_removed_favorite" text="Element eliminat din favorite"/>
+        <text name="sf_confirm_remove" text="Sigur vrei sa elimini '%s' din favorite?"/>
+        <text name="sf_error_not_found" text="Vehiculul nu a fost gasit in magazin"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Favorite magazin: Adauga/Elimina favorit"/>
+    </texts>
+</l10n>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Favorieten"/>
+        <text name="sf_add_favorite" text="Toevoegen aan favorieten"/>
+        <text name="sf_remove_favorite" text="Verwijderen uit favorieten"/>
+        <text name="sf_is_favorite" text="Favoriet"/>
+        <text name="sf_unknown_vehicle" text="Onbekend voertuig"/>
+        <text name="sf_header_vehicle_type" text="Voertuigtype"/>
+        <text name="sf_btn_remove" text="Verwijderen"/>
+        <text name="sf_removed_favorite" text="Item verwijderd uit favorieten"/>
+        <text name="sf_confirm_remove" text="Weet je zeker dat je '%s' uit de favorieten wilt verwijderen?"/>
+        <text name="sf_error_not_found" text="Voertuig niet gevonden in de winkel"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Winkelfavorieten: Favoriet toevoegen/verwijderen"/>
+    </texts>
+</l10n>

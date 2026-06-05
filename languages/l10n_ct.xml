@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="最愛"/>
+        <text name="sf_add_favorite" text="加入最愛"/>
+        <text name="sf_remove_favorite" text="從最愛移除"/>
+        <text name="sf_is_favorite" text="最愛"/>
+        <text name="sf_unknown_vehicle" text="未知車輛"/>
+        <text name="sf_header_vehicle_type" text="車輛類型"/>
+        <text name="sf_btn_remove" text="移除"/>
+        <text name="sf_removed_favorite" text="項目已從最愛中移除"/>
+        <text name="sf_confirm_remove" text="你確定要將 '%s' 從最愛中移除嗎？"/>
+        <text name="sf_error_not_found" text="商店中找不到車輛"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="商店最愛：加入/移除最愛"/>
+    </texts>
+</l10n>

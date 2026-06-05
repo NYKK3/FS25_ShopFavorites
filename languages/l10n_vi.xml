@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Yeu thich"/>
+        <text name="sf_add_favorite" text="Them vao yeu thich"/>
+        <text name="sf_remove_favorite" text="Xoa khoi yeu thich"/>
+        <text name="sf_is_favorite" text="Yeu thich"/>
+        <text name="sf_unknown_vehicle" text="Phuong tien khong xac dinh"/>
+        <text name="sf_header_vehicle_type" text="Loai phuong tien"/>
+        <text name="sf_btn_remove" text="Xoa"/>
+        <text name="sf_removed_favorite" text="Da xoa muc khoi yeu thich"/>
+        <text name="sf_confirm_remove" text="Ban co chac muon xoa '%s' khoi yeu thich khong?"/>
+        <text name="sf_error_not_found" text="Khong tim thay phuong tien trong cua hang"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Yeu thich cua hang: Them/Xoa yeu thich"/>
+    </texts>
+</l10n>

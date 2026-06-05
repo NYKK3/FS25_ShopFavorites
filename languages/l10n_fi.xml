@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <translationContributors>NYKK3</translationContributors>
+    <texts>
+        <text name="sf_header_favorites" text="Suosikit"/>
+        <text name="sf_add_favorite" text="Lisaa suosikkeihin"/>
+        <text name="sf_remove_favorite" text="Poista suosikeista"/>
+        <text name="sf_is_favorite" text="Suosikki"/>
+        <text name="sf_unknown_vehicle" text="Tuntematon ajoneuvo"/>
+        <text name="sf_header_vehicle_type" text="Ajoneuvotyyppi"/>
+        <text name="sf_btn_remove" text="Poista"/>
+        <text name="sf_removed_favorite" text="Tuote poistettu suosikeista"/>
+        <text name="sf_confirm_remove" text="Haluatko varmasti poistaa kohteen '%s' suosikeista?"/>
+        <text name="sf_error_not_found" text="Ajoneuvoa ei loytynyt kaupasta"/>
+        <text name="input_SHOPFAVORITES_TOGGLE_FAVORITE" text="Kaupan suosikit: Lisaa/Poista suosikki"/>
+    </texts>
+</l10n>
