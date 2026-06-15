@@ -95,15 +95,34 @@ ShopFavoritesDebug.enabled = false
 3. Enable the mod in the game.
 4. Load or start a save.
 
+## ModHub
+
+This mod is also published on ModHub:
+
+- https://www.farming-simulator.com/mod.php?mod_id=364675&title=fs2025
+
 ## Supported Languages
 
 - English
-- Italiano
-- Deutsch
-- Français
-- Español
-- Polski
-- Русский
+- English (`ea`)
+- Brazilian Portuguese
+- Czech (`cs`)
+- Czech (`cz`)
+- Traditional Chinese
+- Danish
+- German
+- Spanish
+- Finnish
+- French
+- Hungarian
+- Italian
+- Dutch
+- Norwegian
+- Polish
+- Romanian
+- Russian
+- Turkish
+- Vietnamese
 
 ## Version
 
